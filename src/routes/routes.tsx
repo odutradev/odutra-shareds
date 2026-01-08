@@ -1,18 +1,15 @@
-// import { Navigate } from "react-router-dom";
-
-import InitialRoute from "@routes/components/initialRoute";
 import NotFound from "@pages/notFound";
-import Main from "@pages/main";
+import Dashboard from "@pages/dashboard";
+import PresentationPage from "@pages/presentation";
 
 const routes = [
     {
         path: "/",
         privateRoute: false,
         routes: [
-            // ["*", <Navigate to="/not-found" replace/>],
+            ['/', <Dashboard />],
+            ['/:id', <PresentationPage />],
             ['/not-found', <NotFound />],
-            ['/main', <InitialRoute />],
-            ['/*', <Main />],
         ]
     }
 ];
