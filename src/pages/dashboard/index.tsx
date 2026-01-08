@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Typography, Button, Box, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
-import { Add, Code } from '@mui/icons-material';
+import { Typography, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, IconButton } from '@mui/material';
+import { Add } from '@mui/icons-material';
 import usePresentationsStore from '@stores/presentations';
 import { getAllPresentations, createPresentation, updatePresentation, deletePresentation } from '@actions/presentations';
 import useAction from '@hooks/useAction';
@@ -9,11 +9,12 @@ import PresentationCard from './components/PresentationCard';
 import PresentationForm from './components/PresentationForm';
 import {
   DashboardContainer,
-  StyledAppBar,
-  StyledToolbar,
   ContentContainer,
   EmptyState,
   GridContainer,
+  FloatingButton,
+  Footer,
+  ThemeToggle,
 } from './styles';
 import type { Presentation, CreatePresentationData } from '@actions/presentations/types';
 
@@ -31,6 +32,7 @@ const Dashboard = () => {
   const [formOpen, setFormOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [presentationToDelete, setPresentationToDelete] = useState<Presentation | null>(null);
+  const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'dark');
 
   useEffect(() => {
     loadPresentations();
@@ -101,51 +103,50 @@ const Dashboard = () => {
     setPresentationToDelete(null);
   };
 
+  const toggleTheme = () => {
+    const newTheme = theme === 'light' ? 'dark' : 'light';
+    setTheme(newTheme);
+    localStorage.setItem('theme', newTheme);
+    window.location.reload();
+  };
+
   if (loading) {
     return <Loading message="Carregando apresentações" />;
   }
 
   return (
     <DashboardContainer>
-      <StyledAppBar position="static" color="default">
-        <StyledToolbar>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Code />
-            <Typography variant="h6">Code Presentations</Typography>
-          </Box>
-          <Button
-            variant="contained"
-            startIcon={<Add />}
-            onClick={handleCreate}
-          >
-            Nova Apresentação
-          </Button>
-        </StyledToolbar>
-      </StyledAppBar>
-
       <ContentContainer>
         {presentations.length === 0 ? (
           <EmptyState>
-            <Code sx={{ fontSize: 80, mb: 2, opacity: 0.3 }} />
-            <Typography variant="h5" gutterBottom>
-              Nenhuma apresentação criada
+            <Typography variant="h3" gutterBottom sx={{ fontWeight: 600, mb: 2 }}>
+              Suas Apresentações
             </Typography>
-            <Typography variant="body1" sx={{ mb: 3 }}>
-              Crie sua primeira apresentação de código HTML/CSS/JS
+            <Typography variant="body1" sx={{ mb: 4, opacity: 0.7 }}>
+              Nenhuma apresentação criada ainda
             </Typography>
             <Button
               variant="contained"
               size="large"
               startIcon={<Add />}
               onClick={handleCreate}
+              sx={{ borderRadius: '12px', px: 4, py: 1.5 }}
             >
-              Criar Apresentação
+              Nova Apresentação
             </Button>
           </EmptyState>
         ) : (
           <>
-            <Typography variant="h4" gutterBottom>
-              Minhas Apresentações
+            <Typography 
+              variant="h3" 
+              gutterBottom 
+              sx={{ 
+                fontWeight: 600, 
+                mb: 4,
+                pl: 1
+              }}
+            >
+              Suas Apresentações
             </Typography>
             <GridContainer>
               {presentations.map((presentation) => (
@@ -160,6 +161,20 @@ const Dashboard = () => {
           </>
         )}
       </ContentContainer>
+
+      <FloatingButton
+        variant="contained"
+        onClick={handleCreate}
+        sx={{ display: presentations.length > 0 ? 'flex' : 'none' }}
+      >
+        <Add />
+      </FloatingButton>
+
+      <Footer>
+        <ThemeToggle onClick={toggleTheme}>
+          {theme === 'light' ? '🌙' : '☀️'}
+        </ThemeToggle>
+      </Footer>
 
       <PresentationForm
         open={formOpen}
