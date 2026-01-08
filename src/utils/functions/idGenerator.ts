@@ -1,8 +1,8 @@
 const characters = 'abcdefghijklmnopqrstuvwxyz0123456789';
 
-export const generateId = (): string => {
+export const generateId = (length: number = 6): string => {
   let id = '';
-  for (let i = 0; i < 4; i++) {
+  for (let i = 0; i < length; i++) {
     const randomIndex = Math.floor(Math.random() * characters.length);
     id += characters[randomIndex];
   }
@@ -10,5 +10,5 @@ export const generateId = (): string => {
 };
 
 export const isValidId = (id: string): boolean => {
-  return /^[a-z0-9]{4}$/.test(id);
+  return /^[a-z0-9]{3,12}$/.test(id);
 };
