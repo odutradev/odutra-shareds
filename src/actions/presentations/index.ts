@@ -20,6 +20,11 @@ const mapResponseToPresentation = (item: any): Presentation => {
 };
 
 const extractData = (response: any) => {
+
+
+    if (response.data && response.data._id) {
+        return response.data;
+    }
     return response.data?.result || response.data?.data || response.data;
 };
 
@@ -34,7 +39,6 @@ export const createPresentation = async (data: CreatePresentationData): TypeOrEr
     const response = await api.post("/kv/presentations/create", {
       data: {
         ...data,
-
         id: data.slug
       }
     });
@@ -42,6 +46,7 @@ export const createPresentation = async (data: CreatePresentationData): TypeOrEr
     const rawData = extractData(response);
 
     if (!rawData || !rawData._id) {
+      console.error("Resposta inválida do servidor:", response.data);
       throw new Error("Falha ao criar apresentação: O servidor não retornou um ID válido.");
     }
 
