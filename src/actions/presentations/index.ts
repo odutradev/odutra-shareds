@@ -6,24 +6,32 @@ import type { TypeOrError } from '@utils/types/action';
 
 const token = import.meta.env.VITE_POCKETDB_TOKEN;
 
-
-
 const mapResponseToPresentation = (item: any): Presentation => {
   if (!item) return item;
 
-  if (item.id && item.title && !item.data) return item as Presentation;
+  const data = item.data || {};
 
   return {
     _id: item._id,
-    id: item.data?.id || item.id,
-    title: item.data?.title || item.title,
-    html: item.data?.html || item.html,
-    css: item.data?.css || item.css,
-    js: item.data?.js || item.js,
-    isActive: item.data?.isActive ?? item.isActive ?? true,
+
+    slug: data.slug || data.id || item.slug || item.id,
+    title: data.title || item.title,
+    html: data.html || item.html,
+    css: data.css || item.css,
+    js: data.js || item.js,
+    isActive: data.isActive ?? item.isActive ?? true,
     createdAt: item.createdAt,
     updatedAt: item.lastUpdate || item.updatedAt,
   };
+};
+
+const extractData = (response: any) => {
+    return response.data?.result || response.data?.data || response.data;
+};
+
+const extractList = (response: any) => {
+    const list = response.data?.result || response.data?.data;
+    return Array.isArray(list) ? list : [];
 };
 
 export const createPresentation = async (data: CreatePresentationData): TypeOrError<Presentation> => {
@@ -34,8 +42,7 @@ export const createPresentation = async (data: CreatePresentationData): TypeOrEr
       { headers: { controlAccess: token } }
     );
 
-
-    const rawData = response.data?.result || response.data;
+    const rawData = extractData(response);
 
     if (!rawData || !rawData._id) {
       throw new Error("Falha ao criar apresentação: Resposta inválida da API");
@@ -54,29 +61,36 @@ export const getAllPresentations = async (): TypeOrError<Presentation[]> => {
       { headers: { controlAccess: token } }
     );
 
-    const list = response.data?.result || [];
-    if (!Array.isArray(list)) return [];
-
+    const list = extractList(response);
     return list.map(mapResponseToPresentation);
   } catch (error) {
     return manageActionError(error);
   }
 };
 
-export const getPresentation = async (id: string): TypeOrError<Presentation> => {
+export const getPresentation = async (slug: string): TypeOrError<Presentation> => {
   try {
-    const response = await api.get(
-      `/kv/presentations/get-all?id=${id}&pagination=false`,
+
+    let response = await api.get(
+      `/kv/presentations/get-all?slug=${slug}&pagination=false`,
       { headers: { controlAccess: token } }
     );
 
-    const presentations = response.data?.result;
+    let list = extractList(response);
 
-    if (!presentations || !Array.isArray(presentations) || presentations.length === 0) {
+    if (list.length === 0) {
+        response = await api.get(
+          `/kv/presentations/get-all?id=${slug}&pagination=false`,
+          { headers: { controlAccess: token } }
+        );
+        list = extractList(response);
+    }
+
+    if (list.length === 0) {
       return { error: 'Apresentação não encontrada' };
     }
 
-    return mapResponseToPresentation(presentations[0]);
+    return mapResponseToPresentation(list[0]);
   } catch (error) {
     return manageActionError(error);
   }
@@ -90,7 +104,7 @@ export const updatePresentation = async (_id: string, data: UpdatePresentationDa
       { headers: { controlAccess: token } }
     );
 
-    const rawData = response.data?.result || response.data;
+    const rawData = extractData(response);
 
     if (!rawData || !rawData._id) {
         throw new Error("Falha ao atualizar: Resposta inválida da API");
@@ -114,23 +128,24 @@ export const deletePresentation = async (_id: string): TypeOrError<void> => {
   }
 };
 
-export const checkIdAvailable = async (id: string): TypeOrError<boolean> => {
+export const checkIdAvailable = async (slug: string): TypeOrError<boolean> => {
   try {
-    const response = await api.get(
-      `/kv/presentations/get-all?id=${id}&pagination=false`,
+
+    let response = await api.get(
+      `/kv/presentations/get-all?slug=${slug}&pagination=false`,
       { headers: { controlAccess: token } }
     );
+    let list = extractList(response);
 
-    const list = response.data?.result;
-    if (!list || !Array.isArray(list)) return true;
+    if (list.length > 0) return false;
 
+    response = await api.get(
+        `/kv/presentations/get-all?id=${slug}&pagination=false`,
+        { headers: { controlAccess: token } }
+    );
+    list = extractList(response);
 
-    const exists = list.some((item: any) => {
-        const itemData = mapResponseToPresentation(item);
-        return itemData.id === id;
-    });
-
-    return !exists;
+    return list.length === 0;
   } catch (error) {
     return true;
   }

@@ -154,28 +154,28 @@ const StatusSwitch = styled(Switch, {
   },
 }));
 
-const validateLocalId = (id: string): boolean => {
-  return /^[a-z0-9]{3,12}$/.test(id);
+const validateSlug = (slug: string): boolean => {
+  return /^[a-z0-9]{3,12}$/.test(slug);
 };
 
 const PresentationForm = ({ open, onClose, onSubmit, presentation }: PresentationFormProps) => {
   const [formData, setFormData] = useState<CreatePresentationData>({
-    id: '',
+    slug: '',
     title: '',
     html: '',
     css: '',
     js: '',
     isActive: true,
   });
-  const [idError, setIdError] = useState('');
+  const [slugError, setSlugError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [checkingId, setCheckingId] = useState(false);
+  const [checkingSlug, setCheckingSlug] = useState(false);
   const [activeEditor, setActiveEditor] = useState<'html' | 'css' | 'js'>('html');
 
   useEffect(() => {
     if (presentation) {
       setFormData({
-        id: presentation.id,
+        slug: presentation.slug,
         title: presentation.title,
         html: presentation.html,
         css: presentation.css || '',
@@ -186,48 +186,47 @@ const PresentationForm = ({ open, onClose, onSubmit, presentation }: Presentatio
   }, [presentation, open]);
 
   useEffect(() => {
-    const currentId = formData.id;
+    const currentSlug = formData.slug;
 
-    if (!currentId || (presentation && currentId === presentation.id)) {
-      setIdError('');
+    if (!currentSlug || (presentation && currentSlug === presentation.slug)) {
+      setSlugError('');
       return;
     }
 
-    if (!validateLocalId(currentId)) {
-        setIdError('ID deve ter 3-12 caracteres (letras e números minúsculos)');
+    if (!validateSlug(currentSlug)) {
+        setSlugError('Slug deve ter 3-12 caracteres (letras e números minúsculos)');
         return;
     }
 
-    setIdError('');
-    setCheckingId(true);
+    setSlugError('');
+    setCheckingSlug(true);
 
     const timer = setTimeout(async () => {
       try {
-        const available = await checkIdAvailable(currentId);
+        const available = await checkIdAvailable(currentSlug);
 
         if (available === false) {
-          setIdError('ID já está em uso');
+          setSlugError('Slug já está em uso');
         } else {
-          setIdError('');
+          setSlugError('');
         }
       } catch (error) {
-
-        setIdError('');
+        setSlugError('');
       } finally {
-        setCheckingId(false);
+        setCheckingSlug(false);
       }
     }, 500);
 
     return () => clearTimeout(timer);
-  }, [formData.id, presentation]);
+  }, [formData.slug, presentation]);
 
-  const handleIdChange = (value: string) => {
+  const handleSlugChange = (value: string) => {
     const lowercaseValue = value.toLowerCase().replace(/[^a-z0-9]/g, '');
-    setFormData((prev) => ({ ...prev, id: lowercaseValue }));
+    setFormData((prev) => ({ ...prev, slug: lowercaseValue }));
   };
 
   const handleSubmit = async () => {
-    if (!formData.title || !formData.html || !formData.id || idError || checkingId) {
+    if (!formData.title || !formData.html || !formData.slug || slugError || checkingSlug) {
       return;
     }
 
@@ -239,14 +238,14 @@ const PresentationForm = ({ open, onClose, onSubmit, presentation }: Presentatio
 
   const handleClose = () => {
     setFormData({
-      id: '',
+      slug: '',
       title: '',
       html: '',
       css: '',
       js: '',
       isActive: true,
     });
-    setIdError('');
+    setSlugError('');
     setActiveEditor('html');
     onClose();
   };
@@ -305,22 +304,22 @@ const PresentationForm = ({ open, onClose, onSubmit, presentation }: Presentatio
 
           <Box>
             <Typography variant="caption" color="text.secondary" sx={{ mb: 1, display: 'block' }}>
-              ID da apresentação (URL: {window.location.origin}/{formData.id || 'seu-id'})
+              URL da apresentação ({window.location.origin}/{formData.slug || 'seu-slug'})
             </Typography>
             <Box sx={{ display: 'flex', gap: 1, alignItems: 'flex-start' }}>
               <TextField
-                label="ID único"
-                value={formData.id}
-                onChange={(e) => handleIdChange(e.target.value)}
-                error={!!idError}
-                helperText={idError || (checkingId ? 'Verificando disponibilidade...' : '')}
+                label="Slug / URL"
+                value={formData.slug}
+                onChange={(e) => handleSlugChange(e.target.value)}
+                error={!!slugError}
+                helperText={slugError || (checkingSlug ? 'Verificando disponibilidade...' : '')}
                 required
                 sx={{ flexGrow: 1 }}
                 inputProps={{ maxLength: 12 }}
                 variant="outlined"
                 placeholder="Ex: abc123"
                 InputProps={{
-                  endAdornment: checkingId ? <CircularProgress size={20} /> : null
+                  endAdornment: checkingSlug ? <CircularProgress size={20} /> : null
                 }}
               />
             </Box>
@@ -416,7 +415,7 @@ const PresentationForm = ({ open, onClose, onSubmit, presentation }: Presentatio
           onClick={handleSubmit}
           variant="contained"
           size="large"
-          disabled={!formData.title || !formData.html || !formData.id || !!idError || checkingId || loading}
+          disabled={!formData.title || !formData.html || !formData.slug || !!slugError || checkingSlug || loading}
         >
           {presentation ? 'Salvar Alterações' : 'Criar Apresentação'}
         </Button>

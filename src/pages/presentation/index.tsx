@@ -15,7 +15,8 @@ import {
 import type { Presentation } from '@actions/presentations/types';
 
 const PresentationPage = () => {
-  const { id } = useParams<{ id: string }>();
+
+  const { id: slug } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [presentation, setPresentation] = useState<Presentation | null>(null);
   const [loading, setLoading] = useState(true);
@@ -25,7 +26,7 @@ const PresentationPage = () => {
   const analyticsSubmittedRef = useRef(false);
 
   useEffect(() => {
-    if (!id) {
+    if (!slug) {
       setError('ID inválido');
       setLoading(false);
       return;
@@ -39,13 +40,14 @@ const PresentationPage = () => {
         submitAnalytics();
       }
     };
-  }, [id]);
+  }, [slug]);
 
   const loadPresentation = async () => {
-    if (!id) return;
+    if (!slug) return;
 
     setLoading(true);
-    const result = await getPresentation(id);
+
+    const result = await getPresentation(slug);
 
     if (!result) {
         setError('Erro ao carregar apresentação');
@@ -76,7 +78,7 @@ const PresentationPage = () => {
     analyticsSubmittedRef.current = true;
 
     await createAnalyticsEvent({
-      presentationId: presentation.id,
+      presentationId: presentation.slug,
       viewedAt: new Date().toISOString(),
       timeSpent,
       userAgent: navigator.userAgent,
@@ -156,7 +158,7 @@ const PresentationPage = () => {
               {presentation.title}
             </Typography>
             <Chip
-              label={presentation.id}
+              label={presentation.slug}
               size="small"
               sx={{ fontFamily: 'monospace' }}
             />

@@ -1,6 +1,6 @@
 export type Presentation = {
   _id: string;
-  id: string;
+  slug: string;
   title: string;
   html: string;
   css?: string;
@@ -11,7 +11,7 @@ export type Presentation = {
 };
 
 export type CreatePresentationData = {
-  id: string;
+  slug: string;
   title: string;
   html: string;
   css?: string;

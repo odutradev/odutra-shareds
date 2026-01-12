@@ -21,8 +21,8 @@ const StyledCard = styled(Card)(({ theme }) => ({
   overflow: 'hidden',
   '&:hover': {
     transform: 'translateY(-8px)',
-    boxShadow: theme.palette.mode === 'dark' 
-      ? '0 12px 40px rgba(100, 108, 255, 0.15)' 
+    boxShadow: theme.palette.mode === 'dark'
+      ? '0 12px 40px rgba(100, 108, 255, 0.15)'
       : '0 12px 40px rgba(0, 0, 0, 0.1)',
   },
 }));
@@ -53,13 +53,14 @@ const PresentationCard = ({ presentation, onEdit, onDelete }: PresentationCardPr
 
   useEffect(() => {
     const loadStats = async () => {
-      const result = await getPresentationStats(presentation.id);
+
+      const result = await getPresentationStats(presentation.slug);
       if (result && 'totalViews' in result) {
         setStats(result);
       }
     };
     loadStats();
-  }, [presentation.id]);
+  }, [presentation.slug]);
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -80,7 +81,7 @@ const PresentationCard = ({ presentation, onEdit, onDelete }: PresentationCardPr
   };
 
   const copyLink = () => {
-    const url = `${window.location.origin}/${presentation.id}`;
+    const url = `${window.location.origin}/${presentation.slug}`;
     navigator.clipboard.writeText(url);
     handleMenuClose();
   };
@@ -95,26 +96,26 @@ const PresentationCard = ({ presentation, onEdit, onDelete }: PresentationCardPr
   return (
     <StyledCard>
       <PreviewBox>
-        <Typography 
-          variant="h2" 
-          sx={{ 
+        <Typography
+          variant="h2"
+          sx={{
             opacity: 0.15,
             fontWeight: 700,
             fontFamily: 'monospace',
           }}
         >
-          {`<${presentation.id}/>`}
+          {`<${presentation.slug}/>`}
         </Typography>
       </PreviewBox>
-      
+
       <CardContent sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', p: 3 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
-          <Typography 
-            variant="h6" 
-            component="div" 
-            noWrap 
-            sx={{ 
-              flexGrow: 1, 
+          <Typography
+            variant="h6"
+            component="div"
+            noWrap
+            sx={{
+              flexGrow: 1,
               pr: 1,
               fontWeight: 600,
             }}
@@ -128,9 +129,9 @@ const PresentationCard = ({ presentation, onEdit, onDelete }: PresentationCardPr
 
         <Box sx={{ display: 'flex', gap: 1, mb: 2, flexWrap: 'wrap' }}>
           <Chip
-            label={presentation.id}
+            label={presentation.slug}
             size="small"
-            sx={{ 
+            sx={{
               fontFamily: 'monospace',
               fontWeight: 600,
             }}
@@ -158,9 +159,9 @@ const PresentationCard = ({ presentation, onEdit, onDelete }: PresentationCardPr
         </Box>
       </CardContent>
 
-      <Menu 
-        anchorEl={anchorEl} 
-        open={Boolean(anchorEl)} 
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
         onClose={handleMenuClose}
         PaperProps={{
           sx: {
