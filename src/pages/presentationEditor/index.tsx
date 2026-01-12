@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   TextField,
@@ -22,7 +22,7 @@ import {
   Casino,
 } from '@mui/icons-material';
 import CodeEditor from '@components/codeEditor';
-import type { Presentation, CreatePresentationData } from '@actions/presentations/types';
+import type { CreatePresentationData } from '@actions/presentations/types';
 import { checkIdAvailable, createPresentation, updatePresentation, getPresentation } from '@actions/presentations';
 import useAction from '@hooks/useAction';
 import Loading from '@components/loading';
@@ -81,6 +81,8 @@ const PresentationEditor = () => {
         });
         setPresentationId(result._id);
       } else {
+
+        console.error("Apresentação não encontrada");
         navigate('/dashboard/projects');
       }
     } catch (error) {
@@ -96,6 +98,7 @@ const PresentationEditor = () => {
 
     if (!currentSlug || (editSlug && currentSlug === editSlug)) {
       setSlugError('');
+      setCheckingSlug(false);
       return;
     }
 
@@ -103,15 +106,18 @@ const PresentationEditor = () => {
     setCheckingSlug(true);
 
     const timer = setTimeout(async () => {
+      if (!currentSlug) return;
+
       try {
         const available = await checkIdAvailable(currentSlug);
-
-        if (available === false) {
+        if (!available) {
           setSlugError('Slug já está em uso');
         } else {
           setSlugError('');
         }
       } catch (error) {
+        console.error("Erro na verificação do slug", error);
+
         setSlugError('');
       } finally {
         setCheckingSlug(false);
@@ -122,7 +128,9 @@ const PresentationEditor = () => {
   }, [formData.slug, editSlug]);
 
   const handleSlugChange = (value: string) => {
-    setFormData((prev) => ({ ...prev, slug: value }));
+
+    const normalized = value.toLowerCase().replace(/[^a-z0-9-]/g, '-');
+    setFormData((prev) => ({ ...prev, slug: normalized }));
   };
 
   const generateRandomSlug = () => {
@@ -131,35 +139,44 @@ const PresentationEditor = () => {
   };
 
   const handleSubmit = async () => {
-    if (!formData.title || !formData.html || !formData.slug || slugError || checkingSlug) {
+
+    if (!formData.title || !formData.html || !formData.slug) {
+      return;
+    }
+
+    if (slugError || checkingSlug) {
       return;
     }
 
     setLoading(true);
 
-    if (presentationId) {
-      await useAction({
-        action: () => updatePresentation(presentationId, formData),
-        callback: () => navigate('/dashboard/projects'),
-        toastMessages: {
-          pending: 'Salvando alterações...',
-          success: 'Apresentação atualizada com sucesso!',
-          error: 'Erro ao atualizar apresentação',
-        },
-      });
-    } else {
-      await useAction({
-        action: () => createPresentation(formData),
-        callback: () => navigate('/dashboard/projects'),
-        toastMessages: {
-          pending: 'Criando apresentação...',
-          success: 'Apresentação criada com sucesso!',
-          error: 'Erro ao criar apresentação',
-        },
-      });
+    try {
+      if (presentationId) {
+        await useAction({
+          action: () => updatePresentation(presentationId, formData),
+          callback: () => navigate('/dashboard/projects'),
+          toastMessages: {
+            pending: 'Salvando alterações...',
+            success: 'Apresentação atualizada!',
+            error: 'Erro ao atualizar apresentação',
+          },
+        });
+      } else {
+        await useAction({
+          action: () => createPresentation(formData),
+          callback: () => navigate('/dashboard/projects'),
+          toastMessages: {
+            pending: 'Criando apresentação...',
+            success: 'Apresentação criada com sucesso!',
+            error: 'Erro ao criar. Tente outro Slug.',
+          },
+        });
+      }
+    } catch (err) {
+      console.error("Erro no fluxo de salvamento:", err);
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
   const editorConfig = {
@@ -226,7 +243,7 @@ const PresentationEditor = () => {
               startIcon={<Save />}
               disabled={!formData.title || !formData.html || !formData.slug || !!slugError || checkingSlug || loading}
             >
-              Salvar
+              {loading ? <CircularProgress size={24} color="inherit" /> : 'Salvar'}
             </Button>
           </Box>
         </Header>
@@ -250,9 +267,10 @@ const PresentationEditor = () => {
                   value={formData.slug}
                   onChange={(e) => handleSlugChange(e.target.value)}
                   error={isSlugInvalid}
-                  helperText={''}
+                  helperText={slugError || ''}
                   required
                   fullWidth
+                  disabled={!!presentationId}
                   variant="outlined"
                   placeholder="Ex: minha-apresentacao"
                   sx={{
@@ -290,28 +308,30 @@ const PresentationEditor = () => {
                     )
                   }}
                 />
-                <Tooltip title="Gerar ID aleatório">
-                  <IconButton
-                    onClick={generateRandomSlug}
-                    size="large"
-                    sx={{
-                      width: 56,
-                      height: 56,
-                      borderRadius: 1,
-                      border: '1px solid',
-                      borderColor: 'action.disabled',
-                      color: 'text.secondary',
-                      transition: 'all 0.2s ease',
-                      '&:hover': {
-                        borderColor: 'primary.main',
-                        color: 'primary.main',
-                        backgroundColor: 'action.hover',
-                      }
-                    }}
-                  >
-                    <Casino />
-                  </IconButton>
-                </Tooltip>
+                {!presentationId && (
+                  <Tooltip title="Gerar ID aleatório">
+                    <IconButton
+                      onClick={generateRandomSlug}
+                      size="large"
+                      sx={{
+                        width: 56,
+                        height: 56,
+                        borderRadius: 1,
+                        border: '1px solid',
+                        borderColor: 'action.disabled',
+                        color: 'text.secondary',
+                        transition: 'all 0.2s ease',
+                        '&:hover': {
+                          borderColor: 'primary.main',
+                          color: 'primary.main',
+                          backgroundColor: 'action.hover',
+                        }
+                      }}
+                    >
+                      <Casino />
+                    </IconButton>
+                  </Tooltip>
+                )}
               </Box>
             </Box>
 

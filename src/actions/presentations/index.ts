@@ -30,13 +30,24 @@ const extractList = (response: any) => {
 
 export const createPresentation = async (data: CreatePresentationData): TypeOrError<Presentation> => {
   try {
-    const response = await api.post("/kv/presentations/create", { data });
+
+    const response = await api.post("/kv/presentations/create", {
+      data: {
+        ...data,
+
+        id: data.slug
+      }
+    });
+
     const rawData = extractData(response);
+
     if (!rawData || !rawData._id) {
-      throw new Error("Falha ao criar apresentação: Resposta inválida da API");
+      throw new Error("Falha ao criar apresentação: O servidor não retornou um ID válido.");
     }
+
     return mapResponseToPresentation(rawData);
   } catch (error) {
+    console.error("Erro ao criar apresentação:", error);
     return manageActionError(error);
   }
 };
@@ -53,6 +64,7 @@ export const getAllPresentations = async (): TypeOrError<Presentation[]> => {
 
 export const getPresentation = async (slug: string): TypeOrError<Presentation> => {
   try {
+
     let response = await api.get(`/kv/presentations/get-all?slug=${slug}&pagination=false`);
     let list = extractList(response);
 
@@ -62,6 +74,15 @@ export const getPresentation = async (slug: string): TypeOrError<Presentation> =
     }
 
     if (list.length === 0) {
+
+      try {
+         const directResponse = await api.get(`/kv/presentations/get/${slug}`);
+         const directData = extractData(directResponse);
+         if (directData && directData._id) {
+             return mapResponseToPresentation(directData);
+         }
+      } catch (e) {}
+
       return { error: 'Apresentação não encontrada' };
     }
 
@@ -75,9 +96,11 @@ export const updatePresentation = async (_id: string, data: UpdatePresentationDa
   try {
     const response = await api.patch(`/kv/presentations/update/${_id}`, { data });
     const rawData = extractData(response);
+
     if (!rawData || !rawData._id) {
         throw new Error("Falha ao atualizar: Resposta inválida da API");
     }
+
     return mapResponseToPresentation(rawData);
   } catch (error) {
     return manageActionError(error);
@@ -93,8 +116,9 @@ export const deletePresentation = async (_id: string): TypeOrError<void> => {
   }
 };
 
-export const checkIdAvailable = async (slug: string): TypeOrError<boolean> => {
+export const checkIdAvailable = async (slug: string): Promise<boolean> => {
   try {
+
     let response = await api.get(`/kv/presentations/get-all?slug=${slug}&pagination=false`);
     let list = extractList(response);
 
@@ -104,7 +128,14 @@ export const checkIdAvailable = async (slug: string): TypeOrError<boolean> => {
     list = extractList(response);
 
     return list.length === 0;
-  } catch (error) {
+  } catch (error: any) {
+
+
+    if (error.response?.status === 404) {
+        return true;
+    }
+
+    console.warn("Erro ao verificar disponibilidade do ID:", error);
     return true;
   }
 };
