@@ -29,6 +29,9 @@ const PresentationPage = () => {
 
     const load = async () => {
       setLoading(true);
+      setError(null);
+      setPresentation(null);
+
       const result = await getPresentation(slug);
 
       if (!result) {
@@ -124,13 +127,6 @@ const PresentationPage = () => {
         <Typography variant="h4" gutterBottom>
           {error || 'Apresentação não encontrada'}
         </Typography>
-        <Button
-          variant="contained"
-          startIcon={<Home />}
-          onClick={() => navigate('/')}
-        >
-          Voltar ao Início
-        </Button>
       </ErrorContainer>
     );
   }

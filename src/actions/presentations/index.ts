@@ -6,6 +6,10 @@ import type { TypeOrError } from '@utils/types/action';
 const mapResponseToPresentation = (item: any): Presentation => {
   if (!item) return item;
   const data = item.data || {};
+
+  let isActive = data.isActive ?? item.isActive ?? true;
+  if (isActive === 'false') isActive = false;
+
   return {
     _id: item._id,
     slug: data.slug || data.id || item.slug || item.id,
@@ -13,7 +17,7 @@ const mapResponseToPresentation = (item: any): Presentation => {
     html: data.html || item.html,
     css: data.css || item.css,
     js: data.js || item.js,
-    isActive: data.isActive ?? item.isActive ?? true,
+    isActive: Boolean(isActive),
     createdAt: item.createdAt,
     updatedAt: item.lastUpdate || item.updatedAt,
   };
