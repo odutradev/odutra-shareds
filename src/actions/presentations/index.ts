@@ -1,19 +1,13 @@
 import { manageActionError } from '@utils/functions/action';
 import api from '@utils/functions/api';
-
 import type { Presentation, CreatePresentationData, UpdatePresentationData } from './types';
 import type { TypeOrError } from '@utils/types/action';
 
-const token = import.meta.env.VITE_POCKETDB_TOKEN;
-
 const mapResponseToPresentation = (item: any): Presentation => {
   if (!item) return item;
-
   const data = item.data || {};
-
   return {
     _id: item._id,
-
     slug: data.slug || data.id || item.slug || item.id,
     title: data.title || item.title,
     html: data.html || item.html,
@@ -36,18 +30,11 @@ const extractList = (response: any) => {
 
 export const createPresentation = async (data: CreatePresentationData): TypeOrError<Presentation> => {
   try {
-    const response = await api.post(
-      "/kv/presentations/create",
-      { data },
-      { headers: { controlAccess: token } }
-    );
-
+    const response = await api.post("/kv/presentations/create", { data });
     const rawData = extractData(response);
-
     if (!rawData || !rawData._id) {
       throw new Error("Falha ao criar apresentação: Resposta inválida da API");
     }
-
     return mapResponseToPresentation(rawData);
   } catch (error) {
     return manageActionError(error);
@@ -56,11 +43,7 @@ export const createPresentation = async (data: CreatePresentationData): TypeOrEr
 
 export const getAllPresentations = async (): TypeOrError<Presentation[]> => {
   try {
-    const response = await api.get(
-      "/kv/presentations/get-all?pagination=false",
-      { headers: { controlAccess: token } }
-    );
-
+    const response = await api.get("/kv/presentations/get-all?pagination=false");
     const list = extractList(response);
     return list.map(mapResponseToPresentation);
   } catch (error) {
@@ -70,19 +53,11 @@ export const getAllPresentations = async (): TypeOrError<Presentation[]> => {
 
 export const getPresentation = async (slug: string): TypeOrError<Presentation> => {
   try {
-
-    let response = await api.get(
-      `/kv/presentations/get-all?slug=${slug}&pagination=false`,
-      { headers: { controlAccess: token } }
-    );
-
+    let response = await api.get(`/kv/presentations/get-all?slug=${slug}&pagination=false`);
     let list = extractList(response);
 
     if (list.length === 0) {
-        response = await api.get(
-          `/kv/presentations/get-all?id=${slug}&pagination=false`,
-          { headers: { controlAccess: token } }
-        );
+        response = await api.get(`/kv/presentations/get-all?id=${slug}&pagination=false`);
         list = extractList(response);
     }
 
@@ -98,18 +73,11 @@ export const getPresentation = async (slug: string): TypeOrError<Presentation> =
 
 export const updatePresentation = async (_id: string, data: UpdatePresentationData): TypeOrError<Presentation> => {
   try {
-    const response = await api.patch(
-      `/kv/presentations/update/${_id}`,
-      { data },
-      { headers: { controlAccess: token } }
-    );
-
+    const response = await api.patch(`/kv/presentations/update/${_id}`, { data });
     const rawData = extractData(response);
-
     if (!rawData || !rawData._id) {
         throw new Error("Falha ao atualizar: Resposta inválida da API");
     }
-
     return mapResponseToPresentation(rawData);
   } catch (error) {
     return manageActionError(error);
@@ -118,10 +86,7 @@ export const updatePresentation = async (_id: string, data: UpdatePresentationDa
 
 export const deletePresentation = async (_id: string): TypeOrError<void> => {
   try {
-    await api.delete(
-      `/kv/presentations/delete/${_id}`,
-      { headers: { controlAccess: token } }
-    );
+    await api.delete(`/kv/presentations/delete/${_id}`);
     return;
   } catch (error) {
     return manageActionError(error);
@@ -130,19 +95,12 @@ export const deletePresentation = async (_id: string): TypeOrError<void> => {
 
 export const checkIdAvailable = async (slug: string): TypeOrError<boolean> => {
   try {
-
-    let response = await api.get(
-      `/kv/presentations/get-all?slug=${slug}&pagination=false`,
-      { headers: { controlAccess: token } }
-    );
+    let response = await api.get(`/kv/presentations/get-all?slug=${slug}&pagination=false`);
     let list = extractList(response);
 
     if (list.length > 0) return false;
 
-    response = await api.get(
-        `/kv/presentations/get-all?id=${slug}&pagination=false`,
-        { headers: { controlAccess: token } }
-    );
+    response = await api.get(`/kv/presentations/get-all?id=${slug}&pagination=false`);
     list = extractList(response);
 
     return list.length === 0;

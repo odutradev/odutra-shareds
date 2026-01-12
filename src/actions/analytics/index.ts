@@ -5,8 +5,6 @@ import type { AnalyticsEvent, CreateAnalyticsData } from './types';
 import type { TypeOrError } from '@utils/types/action';
 import type { PresentationStats } from '../presentations/types';
 
-const token = import.meta.env.VITE_POCKETDB_TOKEN;
-
 const extractList = (response: any) => {
     const list = response.data?.result || response.data?.data;
     return Array.isArray(list) ? list : [];
@@ -14,11 +12,7 @@ const extractList = (response: any) => {
 
 export const createAnalyticsEvent = async (data: CreateAnalyticsData): TypeOrError<AnalyticsEvent> => {
   try {
-    const response = await api.post(
-      "/kv/analytics/create",
-      { data },
-      { headers: { controlAccess: token } }
-    );
+    const response = await api.post("/kv/analytics/create", { data });
     return response.data?.result || response.data?.data || response.data;
   } catch (error) {
     return manageActionError(error);
@@ -28,8 +22,7 @@ export const createAnalyticsEvent = async (data: CreateAnalyticsData): TypeOrErr
 export const getPresentationStats = async (presentationId: string): TypeOrError<PresentationStats> => {
   try {
     const response = await api.get(
-      `/kv/analytics/get-all?presentationId=${presentationId}&pagination=false`,
-      { headers: { controlAccess: token } }
+      `/kv/analytics/get-all?presentationId=${presentationId}&pagination=false`
     );
 
     const events: AnalyticsEvent[] = extractList(response);
