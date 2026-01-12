@@ -19,6 +19,7 @@ import {
   Save,
   CheckCircle,
   Error as ErrorIcon,
+  Casino,
 } from '@mui/icons-material';
 import CodeEditor from '@components/codeEditor';
 import type { Presentation, CreatePresentationData } from '@actions/presentations/types';
@@ -122,6 +123,11 @@ const PresentationEditor = () => {
 
   const handleSlugChange = (value: string) => {
     setFormData((prev) => ({ ...prev, slug: value }));
+  };
+
+  const generateRandomSlug = () => {
+    const randomId = Math.random().toString(36).substring(2, 10);
+    handleSlugChange(randomId);
   };
 
   const handleSubmit = async () => {
@@ -238,7 +244,7 @@ const PresentationEditor = () => {
                 placeholder="Ex: Minha Apresentação Incrível"
               />
 
-              <Box>
+              <Box sx={{ display: 'flex', gap: 1, alignItems: 'flex-start' }}>
                 <TextField
                   label="Slug / URL"
                   value={formData.slug}
@@ -284,6 +290,28 @@ const PresentationEditor = () => {
                     )
                   }}
                 />
+                <Tooltip title="Gerar ID aleatório">
+                  <IconButton
+                    onClick={generateRandomSlug}
+                    size="large"
+                    sx={{
+                      width: 56,
+                      height: 56,
+                      borderRadius: 1,
+                      border: '1px solid',
+                      borderColor: 'action.disabled',
+                      color: 'text.secondary',
+                      transition: 'all 0.2s ease',
+                      '&:hover': {
+                        borderColor: 'primary.main',
+                        color: 'primary.main',
+                        backgroundColor: 'action.hover',
+                      }
+                    }}
+                  >
+                    <Casino />
+                  </IconButton>
+                </Tooltip>
               </Box>
             </Box>
 
