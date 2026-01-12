@@ -115,9 +115,12 @@ export const StatusSwitch = styled(Switch)(({ theme }) => ({
 
 export const DashboardGrid = styled(Box)(({ theme }) => ({
   display: 'grid',
-  gridTemplateColumns: '1fr 1fr 2fr',
+  gridTemplateColumns: '1fr 1fr 1fr 2fr',
   gap: theme.spacing(2),
   marginBottom: theme.spacing(4),
+  [theme.breakpoints.down('lg')]: {
+    gridTemplateColumns: '1fr 1fr 1fr',
+  },
   [theme.breakpoints.down('md')]: {
     gridTemplateColumns: '1fr 1fr',
   },
@@ -151,6 +154,10 @@ export const MetricCard = styled(Paper)(({ theme }) => ({
     '&.time': {
       backgroundColor: 'rgba(130, 202, 157, 0.1)',
       color: '#82ca9d',
+    },
+    '&.total': {
+      backgroundColor: 'rgba(255, 128, 66, 0.1)',
+      color: '#ff8042',
     }
   }
 }));
@@ -174,6 +181,9 @@ export const ChartContainer = styled(Paper)(({ theme }) => ({
   border: `1px solid ${theme.palette.divider}`,
   boxShadow: 'none',
   backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.01)',
+  [theme.breakpoints.down('lg')]: {
+    gridColumn: '1 / -1',
+  },
   [theme.breakpoints.down('md')]: {
     gridColumn: '1 / -1',
     height: 200,

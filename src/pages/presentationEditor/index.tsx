@@ -23,7 +23,8 @@ import {
   Timeline,
   AccessTime,
   Visibility,
-  Refresh
+  Refresh,
+  HourglassEmpty
 } from '@mui/icons-material';
 import {
   AreaChart,
@@ -217,7 +218,9 @@ const PresentationEditor = () => {
 
   const formatTime = (seconds: number) => {
     if (seconds < 60) return `${seconds}s`;
-    return `${Math.round(seconds / 60)}m`;
+    if (seconds < 3600) return `${Math.round(seconds / 60)}m`;
+    if (seconds < 86400) return `${(seconds / 3600).toFixed(1)}h`;
+    return `${(seconds / 86400).toFixed(1)}d`;
   };
 
   const editorConfig = {
@@ -322,6 +325,16 @@ const PresentationEditor = () => {
                     <Box>
                       <MetricLabel>Tempo Médio</MetricLabel>
                       <MetricValue>{formatTime(stats?.avgTimeSpent || 0)}</MetricValue>
+                    </Box>
+                  </MetricCard>
+
+                  <MetricCard>
+                    <Box className="icon-wrapper total">
+                      <HourglassEmpty />
+                    </Box>
+                    <Box>
+                      <MetricLabel>Tempo Total</MetricLabel>
+                      <MetricValue>{formatTime(stats?.totalTimeSpent || 0)}</MetricValue>
                     </Box>
                   </MetricCard>
 

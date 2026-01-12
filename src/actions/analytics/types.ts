@@ -36,6 +36,7 @@ export type DailyMetric = {
 export type PresentationAnalytics = {
   totalViews: number;
   avgTimeSpent: number;
+  totalTimeSpent: number;
   lastViewed?: string;
   history: DailyMetric[];
 };

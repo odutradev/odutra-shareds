@@ -109,6 +109,7 @@ export const getPresentationStats = async (presentationId: string): TypeOrError<
     return {
       totalViews,
       avgTimeSpent,
+      totalTimeSpent: totalTime,
       lastViewed,
       history
     };
