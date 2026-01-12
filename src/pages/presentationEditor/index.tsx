@@ -9,8 +9,17 @@ import {
   Stack,
   CircularProgress,
   IconButton,
+  Tooltip,
 } from '@mui/material';
-import { ArrowBack, Code, Style, Javascript, Save } from '@mui/icons-material';
+import {
+  ArrowBack,
+  Code,
+  Style,
+  Javascript,
+  Save,
+  CheckCircle,
+  Error as ErrorIcon,
+} from '@mui/icons-material';
 import CodeEditor from '@components/codeEditor';
 import type { Presentation, CreatePresentationData } from '@actions/presentations/types';
 import { checkIdAvailable, createPresentation, updatePresentation, getPresentation } from '@actions/presentations';
@@ -28,10 +37,6 @@ import {
   StatusToggleContainer,
   StatusSwitch,
 } from './styles';
-
-const validateSlug = (slug: string): boolean => {
-  return /^[a-z0-9]{3,12}$/.test(slug);
-};
 
 const PresentationEditor = () => {
   const navigate = useNavigate();
@@ -75,7 +80,6 @@ const PresentationEditor = () => {
         });
         setPresentationId(result._id);
       } else {
-
         navigate('/dashboard/projects');
       }
     } catch (error) {
@@ -92,11 +96,6 @@ const PresentationEditor = () => {
     if (!currentSlug || (editSlug && currentSlug === editSlug)) {
       setSlugError('');
       return;
-    }
-
-    if (!validateSlug(currentSlug)) {
-        setSlugError('Slug deve ter 3-12 caracteres (letras e números minúsculos)');
-        return;
     }
 
     setSlugError('');
@@ -122,8 +121,7 @@ const PresentationEditor = () => {
   }, [formData.slug, editSlug]);
 
   const handleSlugChange = (value: string) => {
-    const lowercaseValue = value.toLowerCase().replace(/[^a-z0-9]/g, '');
-    setFormData((prev) => ({ ...prev, slug: lowercaseValue }));
+    setFormData((prev) => ({ ...prev, slug: value }));
   };
 
   const handleSubmit = async () => {
@@ -134,7 +132,6 @@ const PresentationEditor = () => {
     setLoading(true);
 
     if (presentationId) {
-
       await useAction({
         action: () => updatePresentation(presentationId, formData),
         callback: () => navigate('/dashboard/projects'),
@@ -145,7 +142,6 @@ const PresentationEditor = () => {
         },
       });
     } else {
-
       await useAction({
         action: () => createPresentation(formData),
         callback: () => navigate('/dashboard/projects'),
@@ -192,6 +188,9 @@ const PresentationEditor = () => {
   if (initialLoading) {
     return <Loading message="Carregando editor..." />;
   }
+
+  const isSlugValid = formData.slug && !slugError && !checkingSlug;
+  const isSlugInvalid = !!slugError;
 
   return (
     <EditorContainer>
@@ -244,15 +243,45 @@ const PresentationEditor = () => {
                   label="Slug / URL"
                   value={formData.slug}
                   onChange={(e) => handleSlugChange(e.target.value)}
-                  error={!!slugError}
-                  helperText={slugError || (checkingSlug ? 'Verificando disponibilidade...' : '')}
+                  error={isSlugInvalid}
+                  helperText={''}
                   required
                   fullWidth
-                  inputProps={{ maxLength: 12 }}
                   variant="outlined"
-                  placeholder="Ex: abc123"
+                  placeholder="Ex: minha-apresentacao"
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      '& fieldset': {
+                        borderColor: isSlugValid ? 'success.main' : undefined,
+                      },
+                      '&:hover fieldset': {
+                        borderColor: isSlugValid ? 'success.main' : undefined,
+                      },
+                      '&.Mui-focused fieldset': {
+                        borderColor: isSlugValid ? 'success.main' : undefined,
+                      },
+                    },
+                  }}
                   InputProps={{
-                    endAdornment: checkingSlug ? <CircularProgress size={20} /> : null
+                    endAdornment: (
+                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                         {checkingSlug && (
+                          <Tooltip title="Verificando disponibilidade...">
+                            <CircularProgress size={20} />
+                          </Tooltip>
+                        )}
+                        {!checkingSlug && isSlugInvalid && (
+                          <Tooltip title={slugError}>
+                            <ErrorIcon color="error" />
+                          </Tooltip>
+                        )}
+                        {!checkingSlug && isSlugValid && (
+                           <Tooltip title="Disponível">
+                            <CheckCircle color="success" />
+                           </Tooltip>
+                        )}
+                      </Box>
+                    )
                   }}
                 />
               </Box>
