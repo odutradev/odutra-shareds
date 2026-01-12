@@ -80,9 +80,7 @@ export const StatusToggleContainer = styled(Box)(({ theme }) => ({
   backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
 }));
 
-export const StatusSwitch = styled(Switch, {
-  shouldForwardProp: (prop) => prop !== 'checked',
-})<{ checked: boolean }>(({ theme, checked }) => ({
+export const StatusSwitch = styled(Switch)(({ theme }) => ({
   width: 56,
   height: 32,
   padding: 0,
@@ -94,7 +92,7 @@ export const StatusSwitch = styled(Switch, {
       transform: 'translateX(24px)',
       color: '#fff',
       '& + .MuiSwitch-track': {
-        backgroundColor: checked ? '#4caf50' : theme.palette.error.main,
+        backgroundColor: '#4caf50',
         opacity: 1,
         border: 0,
       },
