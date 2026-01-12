@@ -1,4 +1,4 @@
-import { Box, AppBar, Toolbar } from '@mui/material';
+import { Box } from '@mui/material';
 import { styled } from '@mui/material/styles';
 
 export const PresentationContainer = styled(Box)({
@@ -6,18 +6,6 @@ export const PresentationContainer = styled(Box)({
   display: 'flex',
   flexDirection: 'column',
   overflow: 'hidden',
-});
-
-export const StyledAppBar = styled(AppBar)({
-  boxShadow: 'none',
-  borderBottom: '1px solid',
-  borderColor: 'divider',
-});
-
-export const StyledToolbar = styled(Toolbar)({
-  minHeight: '48px !important',
-  paddingLeft: '16px !important',
-  paddingRight: '16px !important',
 });
 
 export const ContentFrame = styled('iframe')({
