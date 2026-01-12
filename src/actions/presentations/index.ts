@@ -18,14 +18,14 @@ const mapResponseToPresentation = (item: any): Presentation => {
     css: data.css || item.css,
     js: data.js || item.js,
     isActive: Boolean(isActive),
+    isRedirect: Boolean(data.isRedirect || item.isRedirect),
+    redirectUrl: data.redirectUrl || item.redirectUrl,
     createdAt: item.createdAt,
     updatedAt: item.lastUpdate || item.updatedAt,
   };
 };
 
 const extractData = (response: any) => {
-
-
     if (response.data && response.data._id) {
         return response.data;
     }
@@ -39,7 +39,6 @@ const extractList = (response: any) => {
 
 export const createPresentation = async (data: CreatePresentationData): TypeOrError<Presentation> => {
   try {
-
     const response = await api.post("/kv/presentations/create", {
       data: {
         ...data,
@@ -73,7 +72,6 @@ export const getAllPresentations = async (): TypeOrError<Presentation[]> => {
 
 export const getPresentation = async (slug: string): TypeOrError<Presentation> => {
   try {
-
     let response = await api.get(`/kv/presentations/get-all?slug=${slug}&pagination=false`);
     let list = extractList(response);
 
@@ -83,7 +81,6 @@ export const getPresentation = async (slug: string): TypeOrError<Presentation> =
     }
 
     if (list.length === 0) {
-
       try {
          const directResponse = await api.get(`/kv/presentations/get/${slug}`);
          const directData = extractData(directResponse);
@@ -127,7 +124,6 @@ export const deletePresentation = async (_id: string): TypeOrError<void> => {
 
 export const checkIdAvailable = async (slug: string): Promise<boolean> => {
   try {
-
     let response = await api.get(`/kv/presentations/get-all?slug=${slug}&pagination=false`);
     let list = extractList(response);
 
@@ -138,12 +134,9 @@ export const checkIdAvailable = async (slug: string): Promise<boolean> => {
 
     return list.length === 0;
   } catch (error: any) {
-
-
     if (error.response?.status === 404) {
         return true;
     }
-
     console.warn("Erro ao verificar disponibilidade do ID:", error);
     return true;
   }

@@ -10,6 +10,7 @@ import {
   CircularProgress,
   IconButton,
   Tooltip,
+  Switch
 } from '@mui/material';
 import {
   ArrowBack,
@@ -24,14 +25,13 @@ import {
   AccessTime,
   Visibility,
   Refresh,
-  HourglassEmpty
+  HourglassEmpty,
+  Link as LinkIcon
 } from '@mui/icons-material';
 import {
   AreaChart,
   Area,
   XAxis,
-  YAxis,
-  CartesianGrid,
   Tooltip as RechartsTooltip,
   ResponsiveContainer
 } from 'recharts';
@@ -73,6 +73,8 @@ const PresentationEditor = () => {
     css: '',
     js: '',
     isActive: true,
+    isRedirect: false,
+    redirectUrl: ''
   });
 
   const [presentationId, setPresentationId] = useState<string | null>(null);
@@ -103,6 +105,8 @@ const PresentationEditor = () => {
           css: result.css || '',
           js: result.js || '',
           isActive: result.isActive,
+          isRedirect: result.isRedirect || false,
+          redirectUrl: result.redirectUrl || ''
         });
         setPresentationId(result._id);
 
@@ -177,8 +181,16 @@ const PresentationEditor = () => {
   };
 
   const handleSubmit = async () => {
-    if (!formData.title || !formData.html || !formData.slug) {
+    if (!formData.title || !formData.slug) {
       return;
+    }
+    
+    if (!formData.isRedirect && !formData.html) {
+        return;
+    }
+    
+    if (formData.isRedirect && !formData.redirectUrl) {
+        return;
     }
 
     if (slugError || checkingSlug) {
@@ -258,6 +270,7 @@ const PresentationEditor = () => {
 
   const isSlugValid = formData.slug && !slugError && !checkingSlug;
   const isSlugInvalid = !!slugError;
+  const isFormValid = formData.title && formData.slug && !slugError && !checkingSlug && !loading && (formData.isRedirect ? !!formData.redirectUrl : !!formData.html);
 
   return (
     <EditorContainer>
@@ -285,7 +298,7 @@ const PresentationEditor = () => {
               variant="contained"
               size="large"
               startIcon={<Save />}
-              disabled={!formData.title || !formData.html || !formData.slug || !!slugError || checkingSlug || loading}
+              disabled={!isFormValid}
             >
               {loading ? <CircularProgress size={24} color="inherit" /> : 'Salvar'}
             </Button>
@@ -294,7 +307,6 @@ const PresentationEditor = () => {
 
         <ContentArea>
           <Stack spacing={3}>
-            {}
             {presentationId && (
               <Box>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
@@ -486,57 +498,93 @@ const PresentationEditor = () => {
               </Box>
             </StatusToggleContainer>
 
-            <Box>
-              <EditorToggle>
-                <ToggleButton
-                  active={activeEditor === 'html'}
-                  onClick={() => setActiveEditor('html')}
-                  startIcon={editorConfig.html.icon}
-                >
-                  HTML
-                </ToggleButton>
-                <ToggleButton
-                  active={activeEditor === 'css'}
-                  onClick={() => setActiveEditor('css')}
-                  startIcon={editorConfig.css.icon}
-                >
-                  CSS
-                </ToggleButton>
-                <ToggleButton
-                  active={activeEditor === 'js'}
-                  onClick={() => setActiveEditor('js')}
-                  startIcon={editorConfig.js.icon}
-                >
-                  JavaScript
-                </ToggleButton>
-              </EditorToggle>
-
-              <EditorLabel>
-                {currentEditor.icon}
-                <Box>
-                  <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
-                    {currentEditor.label}
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    {currentEditor.description}
-                  </Typography>
+            <Box sx={{ p: 3, border: '1px solid', borderColor: 'divider', borderRadius: '12px', bgcolor: 'background.paper', transition: 'all 0.2s' }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: formData.isRedirect ? 3 : 0 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                  <Box sx={{ p: 1, borderRadius: '8px', bgcolor: formData.isRedirect ? 'primary.lighter' : 'action.hover', color: formData.isRedirect ? 'primary.main' : 'text.secondary' }}>
+                      <LinkIcon />
+                  </Box>
+                  <Box>
+                    <Typography variant="subtitle1" fontWeight={600}>Modo Redirecionador</Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Ao invés de exibir slides, redireciona o visitante para outra URL.
+                    </Typography>
+                  </Box>
                 </Box>
-                {activeEditor !== 'html' && (
-                  <Chip
-                    label="Opcional"
-                    size="small"
-                    sx={{ ml: 'auto', height: 20, fontSize: '0.7rem' }}
-                  />
-                )}
-              </EditorLabel>
+                <Switch
+                  checked={formData.isRedirect || false}
+                  onChange={(e) => setFormData({ ...formData, isRedirect: e.target.checked })}
+                />
+              </Box>
 
-              <CodeEditor
-                value={currentEditor.value}
-                onChange={currentEditor.onChange}
-                language={currentEditor.language}
-                height="60vh"
-              />
+              {formData.isRedirect && (
+                <TextField
+                  fullWidth
+                  label="URL de Destino"
+                  placeholder="https://exemplo.com"
+                  value={formData.redirectUrl || ''}
+                  onChange={(e) => setFormData({ ...formData, redirectUrl: e.target.value })}
+                  InputProps={{
+                    startAdornment: <LinkIcon sx={{ mr: 1, color: 'text.secondary' }} />
+                  }}
+                  helperText="Certifique-se de incluir https://"
+                />
+              )}
             </Box>
+
+            {!formData.isRedirect && (
+              <Box>
+                <EditorToggle>
+                  <ToggleButton
+                    active={activeEditor === 'html'}
+                    onClick={() => setActiveEditor('html')}
+                    startIcon={editorConfig.html.icon}
+                  >
+                    HTML
+                  </ToggleButton>
+                  <ToggleButton
+                    active={activeEditor === 'css'}
+                    onClick={() => setActiveEditor('css')}
+                    startIcon={editorConfig.css.icon}
+                  >
+                    CSS
+                  </ToggleButton>
+                  <ToggleButton
+                    active={activeEditor === 'js'}
+                    onClick={() => setActiveEditor('js')}
+                    startIcon={editorConfig.js.icon}
+                  >
+                    JavaScript
+                  </ToggleButton>
+                </EditorToggle>
+
+                <EditorLabel>
+                  {currentEditor.icon}
+                  <Box>
+                    <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                      {currentEditor.label}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      {currentEditor.description}
+                    </Typography>
+                  </Box>
+                  {activeEditor !== 'html' && (
+                    <Chip
+                      label="Opcional"
+                      size="small"
+                      sx={{ ml: 'auto', height: 20, fontSize: '0.7rem' }}
+                    />
+                  )}
+                </EditorLabel>
+
+                <CodeEditor
+                  value={currentEditor.value}
+                  onChange={currentEditor.onChange}
+                  language={currentEditor.language}
+                  height="60vh"
+                />
+              </Box>
+            )}
           </Stack>
         </ContentArea>
       </EditorPaper>

@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { useParams } from 'react-router-dom';
-import { Typography } from '@mui/material';
-import { ErrorOutline } from '@mui/icons-material';
+import { Typography, Box, CircularProgress } from '@mui/material';
+import { ErrorOutline, Link as LinkIcon } from '@mui/icons-material';
 import { getPresentation } from '@actions/presentations';
 import { createViewEvent, createTimeEvent } from '@actions/analytics';
 import Loading from '@components/loading';
@@ -67,15 +67,36 @@ const PresentationPage = () => {
     const currentSlug = presentation.slug;
 
     if (viewRecordedSlugRef.current !== currentSlug) {
-      createViewEvent({
+      const viewPromise = createViewEvent({
         presentationId: currentSlug,
         viewedAt: new Date().toISOString(),
         userAgent: navigator.userAgent,
         referrer: document.referrer,
-      }).catch(console.error);
+      });
+      
+      if (presentation.isRedirect && presentation.redirectUrl) {
+          const performRedirect = () => {
+             let targetUrl = presentation.redirectUrl!;
+             if (!targetUrl.match(/^https?:\/\//)) {
+                 targetUrl = 'https://' + targetUrl;
+             }
+             window.location.href = targetUrl;
+          };
+
+          viewPromise
+            .finally(() => {
+               setTimeout(performRedirect, 100);
+            });
+            
+          setTimeout(performRedirect, 2000);
+      } else {
+          viewPromise.catch(console.error);
+      }
 
       viewRecordedSlugRef.current = currentSlug;
     }
+
+    if (presentation.isRedirect) return;
 
     lastSentTimeRef.current = Date.now();
 
@@ -118,7 +139,7 @@ const PresentationPage = () => {
   }, [presentation]);
 
   useEffect(() => {
-    if (!presentation || !iframeRef.current) return;
+    if (!presentation || !iframeRef.current || presentation.isRedirect) return;
 
     const doc = iframeRef.current.contentDocument;
     if (!doc) return;
@@ -157,6 +178,36 @@ const PresentationPage = () => {
         </Typography>
       </ErrorContainer>
     );
+  }
+
+  if (presentation.isRedirect && presentation.redirectUrl) {
+      return (
+        <PresentationContainer sx={{ alignItems: 'center', justifyContent: 'center' }}>
+            <Box sx={{ textAlign: 'center', p: 4, maxWidth: 500 }}>
+                <CircularProgress size={40} sx={{ mb: 3 }} />
+                <Typography variant="h5" fontWeight={600} gutterBottom>
+                    Redirecionando...
+                </Typography>
+                <Typography color="text.secondary" sx={{ mb: 2 }}>
+                    Você está sendo redirecionado para:
+                </Typography>
+                <Box sx={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center',
+                    gap: 1, 
+                    p: 2, 
+                    bgcolor: 'action.hover', 
+                    borderRadius: 2,
+                    typography: 'body2',
+                    fontFamily: 'monospace'
+                }}>
+                    <LinkIcon fontSize="small" />
+                    {presentation.redirectUrl}
+                </Box>
+            </Box>
+        </PresentationContainer>
+      );
   }
 
   return (

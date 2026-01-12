@@ -6,6 +6,8 @@ export type Presentation = {
   css?: string;
   js?: string;
   isActive: boolean;
+  isRedirect?: boolean;
+  redirectUrl?: string;
   createdAt: string;
   updatedAt: string;
 };
@@ -17,6 +19,8 @@ export type CreatePresentationData = {
   css?: string;
   js?: string;
   isActive: boolean;
+  isRedirect?: boolean;
+  redirectUrl?: string;
 };
 
 export type UpdatePresentationData = {
@@ -25,6 +29,8 @@ export type UpdatePresentationData = {
   css?: string;
   js?: string;
   isActive?: boolean;
+  isRedirect?: boolean;
+  redirectUrl?: string;
 };
 
 export type PresentationStats = {
