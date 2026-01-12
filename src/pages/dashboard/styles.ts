@@ -58,8 +58,8 @@ export const EmptyState = styled(Box)(({ theme }) => ({
 
 export const GridContainer = styled(Box)(({ theme }) => ({
   display: 'grid',
-  gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))',
-  gap: theme.spacing(3),
+  gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+  gap: theme.spacing(2.5),
 }));
 
 export const ThemeButton = styled(IconButton)(({ theme }) => ({

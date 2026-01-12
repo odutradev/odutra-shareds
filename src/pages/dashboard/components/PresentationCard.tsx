@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Card, CardContent, Typography, Box, Chip, IconButton, Menu, MenuItem } from '@mui/material';
-import { MoreVert, Edit, Delete, Visibility, AccessTime, Link as LinkIcon } from '@mui/icons-material';
+import { Card, CardContent, Typography, Box, Chip, IconButton, Menu, MenuItem, Tooltip } from '@mui/material';
+import { MoreVert, Edit, Delete, Visibility, Link as LinkIcon, OpenInNew } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
 import type { Presentation, PresentationStats } from '@actions/presentations/types';
 import { getPresentationStats } from '@actions/analytics';
@@ -12,40 +12,22 @@ interface PresentationCardProps {
 }
 
 const StyledCard = styled(Card)(({ theme }) => ({
-  height: '100%',
   display: 'flex',
   flexDirection: 'column',
-  transition: 'all 0.3s ease',
+  transition: 'all 0.2s ease-in-out',
   border: `1px solid ${theme.palette.divider}`,
-  borderRadius: '16px',
-  overflow: 'hidden',
+  borderRadius: '12px',
+  boxShadow: 'none',
+  backgroundColor: theme.palette.background.paper,
+  height: 'auto',
   '&:hover': {
-    transform: 'translateY(-8px)',
+    borderColor: theme.palette.primary.main,
+    transform: 'translateY(-2px)',
     boxShadow: theme.palette.mode === 'dark'
-      ? '0 12px 40px rgba(100, 108, 255, 0.15)'
-      : '0 12px 40px rgba(0, 0, 0, 0.1)',
+      ? '0 4px 20px rgba(0,0,0,0.4)'
+      : '0 4px 20px rgba(0,0,0,0.08)',
   },
 }));
-
-const PreviewBox = styled(Box)(({ theme }) => ({
-  height: 140,
-  background: theme.palette.mode === 'dark'
-    ? 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)'
-    : 'linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%)',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  overflow: 'hidden',
-  position: 'relative',
-  borderBottom: `1px solid ${theme.palette.divider}`,
-}));
-
-const StatsBox = styled(Box)({
-  display: 'flex',
-  gap: 1,
-  alignItems: 'center',
-  marginTop: 1,
-});
 
 const PresentationCard = ({ presentation, onEdit, onDelete }: PresentationCardProps) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -56,12 +38,12 @@ const PresentationCard = ({ presentation, onEdit, onDelete }: PresentationCardPr
 
     const loadStats = async () => {
       const result = await getPresentationStats(presentation.slug);
-      
+
       if (mounted && result && 'totalViews' in result) {
         setStats(result);
       }
     };
-    
+
     loadStats();
 
     return () => {
@@ -93,76 +75,79 @@ const PresentationCard = ({ presentation, onEdit, onDelete }: PresentationCardPr
     handleMenuClose();
   };
 
-  const formatTime = (seconds: number) => {
-    if (seconds < 60) return `${seconds}s`;
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-    return `${minutes}m ${remainingSeconds}s`;
+  const openPresentation = () => {
+    const url = `${window.location.origin}/${presentation.slug}`;
+    window.open(url, '_blank');
   };
 
   return (
     <StyledCard>
-      <PreviewBox>
-        <Typography
-          variant="h2"
-          sx={{
-            opacity: 0.15,
-            fontWeight: 700,
-            fontFamily: 'monospace',
-          }}
-        >
-          {`<${presentation.slug}/>`}
-        </Typography>
-      </PreviewBox>
-
-      <CardContent sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', p: 3 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
-          <Typography
-            variant="h6"
-            component="div"
-            noWrap
-            sx={{
-              flexGrow: 1,
-              pr: 1,
-              fontWeight: 600,
-            }}
-          >
-            {presentation.title}
-          </Typography>
-          <IconButton size="small" onClick={handleMenuOpen} sx={{ mt: -1 }}>
-            <MoreVert />
-          </IconButton>
-        </Box>
-
-        <Box sx={{ display: 'flex', gap: 1, mb: 2, flexWrap: 'wrap' }}>
-          <Chip
-            label={presentation.slug}
-            size="small"
-            sx={{
-              fontFamily: 'monospace',
-              fontWeight: 600,
-            }}
-          />
-          <Chip
-            label={presentation.isActive ? 'Ativa' : 'Inativa'}
-            size="small"
-            color={presentation.isActive ? 'success' : 'default'}
-          />
-        </Box>
-
-        <Box sx={{ mt: 'auto', pt: 2, borderTop: '1px solid', borderColor: 'divider' }}>
-          <StatsBox>
-            <Visibility fontSize="small" sx={{ opacity: 0.6 }} />
-            <Typography variant="body2" sx={{ opacity: 0.8 }}>
-              {stats.totalViews} visualizações
+      <CardContent sx={{ p: '24px !important' }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 2 }}>
+          <Box sx={{ minWidth: 0, flex: 1 }}>
+            <Typography
+              variant="h6"
+              sx={{
+                fontWeight: 600,
+                fontSize: '1rem',
+                lineHeight: 1.3,
+                mb: 1.5,
+                color: 'text.primary'
+              }}
+            >
+              {presentation.title}
             </Typography>
-          </StatsBox>
-          <StatsBox>
-            <AccessTime fontSize="small" sx={{ opacity: 0.6 }} />
-            <Typography variant="body2" sx={{ opacity: 0.8 }}>
-              Média: {formatTime(stats.avgTimeSpent)}
-            </Typography>
-          </StatsBox>
+
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <Chip
+                label={presentation.isActive ? 'Ativa' : 'Inativa'}
+                size="small"
+                color={presentation.isActive ? 'success' : 'default'}
+                variant="outlined"
+                sx={{
+                  height: 22,
+                  fontSize: '0.75rem',
+                  fontWeight: 600,
+                  borderRadius: '6px',
+                  border: '1px solid',
+                  borderColor: presentation.isActive ? 'success.main' : 'divider'
+                }}
+              />
+
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: 'text.secondary' }}>
+                <Visibility sx={{ fontSize: 16 }} />
+                <Typography variant="caption" sx={{ fontWeight: 600, fontSize: '0.8rem' }}>
+                  {stats.totalViews}
+                </Typography>
+              </Box>
+            </Box>
+          </Box>
+
+          <Box sx={{ display: 'flex', gap: 0.5 }}>
+            <Tooltip title="Abrir site">
+              <IconButton
+                size="small"
+                onClick={openPresentation}
+                sx={{
+                  color: 'text.secondary',
+                  '&:hover': {
+                    color: 'primary.main',
+                    backgroundColor: 'primary.lighter'
+                  }
+                }}
+              >
+                <OpenInNew fontSize="small" />
+              </IconButton>
+            </Tooltip>
+
+            <IconButton
+              size="small"
+              onClick={handleMenuOpen}
+              sx={{ color: 'text.secondary' }}
+            >
+              <MoreVert fontSize="small" />
+            </IconButton>
+          </Box>
         </Box>
       </CardContent>
 
@@ -173,21 +158,25 @@ const PresentationCard = ({ presentation, onEdit, onDelete }: PresentationCardPr
         PaperProps={{
           sx: {
             borderRadius: '12px',
-            minWidth: 180,
+            minWidth: 160,
+            boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+            mt: 1
           }
         }}
+        transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+        anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
       >
         <MenuItem onClick={handleEdit}>
-          <Edit fontSize="small" sx={{ mr: 1.5 }} />
-          Editar
+          <Edit fontSize="small" sx={{ mr: 1.5, color: 'text.secondary' }} />
+          <Typography variant="body2">Editar</Typography>
         </MenuItem>
         <MenuItem onClick={copyLink}>
-          <LinkIcon fontSize="small" sx={{ mr: 1.5 }} />
-          Copiar link
+          <LinkIcon fontSize="small" sx={{ mr: 1.5, color: 'text.secondary' }} />
+          <Typography variant="body2">Copiar link</Typography>
         </MenuItem>
         <MenuItem onClick={handleDelete} sx={{ color: 'error.main' }}>
           <Delete fontSize="small" sx={{ mr: 1.5 }} />
-          Deletar
+          <Typography variant="body2">Deletar</Typography>
         </MenuItem>
       </Menu>
     </StyledCard>
