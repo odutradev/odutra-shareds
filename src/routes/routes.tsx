@@ -1,6 +1,6 @@
 import NotFound from "@pages/notFound";
 import Dashboard from "@pages/dashboard";
-import PresentationEditor from "@pages/dashboard/editor";
+import PresentationEditor from "@pages/presentationEditor";
 import PresentationPage from "@pages/presentation";
 import Home from "@pages/home";
 
