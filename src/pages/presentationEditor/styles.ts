@@ -115,14 +115,12 @@ export const StatusSwitch = styled(Switch)(({ theme }) => ({
 
 export const DashboardGrid = styled(Box)(({ theme }) => ({
   display: 'grid',
-  gridTemplateColumns: '1fr 1fr 1fr 2fr',
+
+  gridTemplateColumns: 'repeat(3, 1fr)',
   gap: theme.spacing(2),
   marginBottom: theme.spacing(4),
-  [theme.breakpoints.down('lg')]: {
-    gridTemplateColumns: '1fr 1fr 1fr',
-  },
   [theme.breakpoints.down('md')]: {
-    gridTemplateColumns: '1fr 1fr',
+    gridTemplateColumns: '1fr 1fr 1fr',
   },
   [theme.breakpoints.down('sm')]: {
     gridTemplateColumns: '1fr',
@@ -130,19 +128,19 @@ export const DashboardGrid = styled(Box)(({ theme }) => ({
 }));
 
 export const MetricCard = styled(Paper)(({ theme }) => ({
-  padding: theme.spacing(2),
+  padding: theme.spacing(1.5),
   display: 'flex',
   alignItems: 'center',
-  gap: theme.spacing(2),
+  gap: theme.spacing(1.5),
   borderRadius: '12px',
   border: `1px solid ${theme.palette.divider}`,
   boxShadow: 'none',
   backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.01)',
 
   '& .icon-wrapper': {
-    width: 48,
-    height: 48,
-    borderRadius: '12px',
+    width: 40,
+    height: 40,
+    borderRadius: '10px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -163,13 +161,13 @@ export const MetricCard = styled(Paper)(({ theme }) => ({
 }));
 
 export const MetricValue = styled(Typography)(({ theme }) => ({
-  fontSize: '1.5rem',
+  fontSize: '1.25rem',
   fontWeight: 700,
   lineHeight: 1.2,
 }));
 
 export const MetricLabel = styled(Typography)(({ theme }) => ({
-  fontSize: '0.875rem',
+  fontSize: '0.75rem',
   color: theme.palette.text.secondary,
   fontWeight: 500,
 }));
@@ -181,11 +179,6 @@ export const ChartContainer = styled(Paper)(({ theme }) => ({
   border: `1px solid ${theme.palette.divider}`,
   boxShadow: 'none',
   backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.01)',
-  [theme.breakpoints.down('lg')]: {
-    gridColumn: '1 / -1',
-  },
-  [theme.breakpoints.down('md')]: {
-    gridColumn: '1 / -1',
-    height: 200,
-  }
+
+  gridColumn: '1 / -1',
 }));
