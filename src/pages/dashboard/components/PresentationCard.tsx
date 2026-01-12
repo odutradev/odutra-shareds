@@ -20,6 +20,7 @@ const StyledCard = styled(Card)(({ theme }) => ({
   boxShadow: 'none',
   backgroundColor: theme.palette.background.paper,
   height: 'auto',
+  cursor: 'pointer',
   '&:hover': {
     borderColor: theme.palette.primary.main,
     transform: 'translateY(-2px)',
@@ -51,7 +52,12 @@ const PresentationCard = ({ presentation, onEdit, onDelete }: PresentationCardPr
     };
   }, [presentation.slug]);
 
+  const handleCardClick = () => {
+    onEdit(presentation);
+  };
+
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    event.stopPropagation();
     setAnchorEl(event.currentTarget);
   };
 
@@ -59,29 +65,33 @@ const PresentationCard = ({ presentation, onEdit, onDelete }: PresentationCardPr
     setAnchorEl(null);
   };
 
-  const handleEdit = () => {
+  const handleEditOption = (event: React.MouseEvent<HTMLElement>) => {
+    event.stopPropagation();
     onEdit(presentation);
     handleMenuClose();
   };
 
-  const handleDelete = () => {
+  const handleDeleteOption = (event: React.MouseEvent<HTMLElement>) => {
+    event.stopPropagation();
     onDelete(presentation);
     handleMenuClose();
   };
 
-  const copyLink = () => {
+  const copyLink = (event: React.MouseEvent<HTMLElement>) => {
+    event.stopPropagation();
     const url = `${window.location.origin}/${presentation.slug}`;
     navigator.clipboard.writeText(url);
     handleMenuClose();
   };
 
-  const openPresentation = () => {
+  const openPresentation = (event: React.MouseEvent<HTMLElement>) => {
+    event.stopPropagation();
     const url = `${window.location.origin}/${presentation.slug}`;
     window.open(url, '_blank');
   };
 
   return (
-    <StyledCard>
+    <StyledCard onClick={handleCardClick}>
       <CardContent sx={{ p: '24px !important' }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 2 }}>
           <Box sx={{ minWidth: 0, flex: 1 }}>
@@ -155,6 +165,7 @@ const PresentationCard = ({ presentation, onEdit, onDelete }: PresentationCardPr
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
         onClose={handleMenuClose}
+        onClick={(e) => e.stopPropagation()}
         PaperProps={{
           sx: {
             borderRadius: '12px',
@@ -166,7 +177,7 @@ const PresentationCard = ({ presentation, onEdit, onDelete }: PresentationCardPr
         transformOrigin={{ horizontal: 'right', vertical: 'top' }}
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
       >
-        <MenuItem onClick={handleEdit}>
+        <MenuItem onClick={handleEditOption}>
           <Edit fontSize="small" sx={{ mr: 1.5, color: 'text.secondary' }} />
           <Typography variant="body2">Editar</Typography>
         </MenuItem>
@@ -174,7 +185,7 @@ const PresentationCard = ({ presentation, onEdit, onDelete }: PresentationCardPr
           <LinkIcon fontSize="small" sx={{ mr: 1.5, color: 'text.secondary' }} />
           <Typography variant="body2">Copiar link</Typography>
         </MenuItem>
-        <MenuItem onClick={handleDelete} sx={{ color: 'error.main' }}>
+        <MenuItem onClick={handleDeleteOption} sx={{ color: 'error.main' }}>
           <Delete fontSize="small" sx={{ mr: 1.5 }} />
           <Typography variant="body2">Deletar</Typography>
         </MenuItem>
