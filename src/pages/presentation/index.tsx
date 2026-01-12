@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import { Typography } from '@mui/material';
 import { ErrorOutline } from '@mui/icons-material';
 import { getPresentation } from '@actions/presentations';
-import { createAnalyticsEvent } from '@actions/analytics';
+import { createViewEvent, createTimeEvent } from '@actions/analytics';
 import Loading from '@components/loading';
 import {
   PresentationContainer,
@@ -63,29 +63,32 @@ const PresentationPage = () => {
   useEffect(() => {
     if (!presentation) return;
 
-    lastSentTimeRef.current = Date.now();
     const currentSlug = presentation.slug;
+    createViewEvent({
+      presentationId: currentSlug,
+      viewedAt: new Date().toISOString(),
+      userAgent: navigator.userAgent,
+      referrer: document.referrer,
+    }).catch(console.error);
 
-    const sendAnalytics = (timeSpent: number) => {
+    lastSentTimeRef.current = Date.now();
+
+    const sendTimeAnalytics = (timeSpent: number) => {
       if (timeSpent <= 0) return;
 
-      createAnalyticsEvent({
+      createTimeEvent({
         presentationId: currentSlug,
-        viewedAt: new Date().toISOString(),
+        recordedAt: new Date().toISOString(),
         timeSpent,
-        userAgent: navigator.userAgent,
-        referrer: document.referrer,
       }).catch(console.error);
     };
 
     const intervalId = setInterval(() => {
       const now = Date.now();
-
-
       const duration = Math.floor((now - lastSentTimeRef.current) / 1000);
 
       if (duration >= 30) {
-        sendAnalytics(duration);
+        sendTimeAnalytics(duration);
         lastSentTimeRef.current = now;
       }
     }, 30000);
@@ -94,7 +97,7 @@ const PresentationPage = () => {
       const now = Date.now();
       const duration = Math.floor((now - lastSentTimeRef.current) / 1000);
       if (duration > 0) {
-        sendAnalytics(duration);
+        sendTimeAnalytics(duration);
         lastSentTimeRef.current = now;
       }
     };

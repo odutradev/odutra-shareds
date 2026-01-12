@@ -1,16 +1,27 @@
-export type AnalyticsEvent = {
+export type ViewEvent = {
   _id: string;
   presentationId: string;
   viewedAt: string;
-  timeSpent: number;
   userAgent?: string;
   referrer?: string;
 };
 
-export type CreateAnalyticsData = {
+export type TimeEvent = {
+  _id: string;
+  presentationId: string;
+  recordedAt: string;
+  timeSpent: number;
+};
+
+export type CreateViewData = {
   presentationId: string;
   viewedAt: string;
-  timeSpent: number;
   userAgent?: string;
   referrer?: string;
+};
+
+export type CreateTimeData = {
+  presentationId: string;
+  recordedAt: string;
+  timeSpent: number;
 };

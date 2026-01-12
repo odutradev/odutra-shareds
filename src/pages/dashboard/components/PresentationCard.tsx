@@ -52,14 +52,21 @@ const PresentationCard = ({ presentation, onEdit, onDelete }: PresentationCardPr
   const [stats, setStats] = useState<PresentationStats>({ totalViews: 0, avgTimeSpent: 0 });
 
   useEffect(() => {
-    const loadStats = async () => {
+    let mounted = true;
 
+    const loadStats = async () => {
       const result = await getPresentationStats(presentation.slug);
-      if (result && 'totalViews' in result) {
+      
+      if (mounted && result && 'totalViews' in result) {
         setStats(result);
       }
     };
+    
     loadStats();
+
+    return () => {
+      mounted = false;
+    };
   }, [presentation.slug]);
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
