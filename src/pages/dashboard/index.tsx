@@ -1,7 +1,16 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Typography, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
-import { Add } from '@mui/icons-material';
+import {
+  Typography,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  Button,
+  Box
+} from '@mui/material';
+import { Add, DarkMode, LightMode } from '@mui/icons-material';
 import usePresentationsStore from '@stores/presentations';
 import { getAllPresentations, deletePresentation } from '@actions/presentations';
 import useAction from '@hooks/useAction';
@@ -10,11 +19,13 @@ import PresentationCard from './components/PresentationCard';
 import {
   DashboardContainer,
   ContentContainer,
+  Header,
+  TitleSection,
+  ActionSection,
   EmptyState,
   GridContainer,
-  FloatingButton,
-  Footer,
-  ThemeToggle,
+  ThemeButton,
+  CreateButton,
 } from './styles';
 import type { Presentation } from '@actions/presentations/types';
 
@@ -88,80 +99,96 @@ const Dashboard = () => {
   return (
     <DashboardContainer>
       <ContentContainer>
+        <Header>
+          <TitleSection>
+            <Typography variant="h4" sx={{ fontWeight: 700, letterSpacing: '-0.5px' }}>
+              Minhas Apresentações
+            </Typography>
+            <Typography variant="body1" color="text.secondary" sx={{ mt: 0.5 }}>
+              Gerencie seus slides e acompanhe estatísticas
+            </Typography>
+          </TitleSection>
+
+          <ActionSection>
+            <ThemeButton onClick={toggleTheme} aria-label="Alternar tema">
+              {theme === 'light' ? <DarkMode fontSize="small" /> : <LightMode fontSize="small" />}
+            </ThemeButton>
+
+            {presentations.length > 0 && (
+              <CreateButton
+                variant="contained"
+                startIcon={<Add />}
+                onClick={handleCreate}
+              >
+                Nova Apresentação
+              </CreateButton>
+            )}
+          </ActionSection>
+        </Header>
+
         {presentations.length === 0 ? (
           <EmptyState>
-            <Typography variant="h3" gutterBottom sx={{ fontWeight: 600, mb: 2 }}>
-              Suas Apresentações
+            <Typography variant="h5" sx={{ fontWeight: 600, mb: 1 }}>
+              Nenhuma apresentação encontrada
             </Typography>
-            <Typography variant="body1" sx={{ mb: 4, opacity: 0.7 }}>
-              Nenhuma apresentação criada ainda
+            <Typography variant="body1" color="text.secondary" sx={{ mb: 4, maxWidth: 400 }}>
+              Crie sua primeira apresentação para começar a compartilhar suas ideias com o mundo.
             </Typography>
-            <Button
+            <CreateButton
               variant="contained"
               size="large"
               startIcon={<Add />}
               onClick={handleCreate}
-              sx={{ borderRadius: '12px', px: 4, py: 1.5 }}
             >
-              Nova Apresentação
-            </Button>
+              Criar Apresentação
+            </CreateButton>
           </EmptyState>
         ) : (
-          <>
-            <Typography
-              variant="h3"
-              gutterBottom
-              sx={{
-                fontWeight: 600,
-                mb: 4,
-                pl: 1
-              }}
-            >
-              Suas Apresentações
-            </Typography>
-            <GridContainer>
-              {presentations.map((presentation) => {
-                if (!presentation || !presentation._id) return null;
-                return (
-                  <PresentationCard
-                    key={presentation._id}
-                    presentation={presentation}
-                    onEdit={handleEdit}
-                    onDelete={handleDeleteClick}
-                  />
-                );
-              })}
-            </GridContainer>
-          </>
+          <GridContainer>
+            {presentations.map((presentation) => {
+              if (!presentation || !presentation._id) return null;
+              return (
+                <PresentationCard
+                  key={presentation._id}
+                  presentation={presentation}
+                  onEdit={handleEdit}
+                  onDelete={handleDeleteClick}
+                />
+              );
+            })}
+          </GridContainer>
         )}
       </ContentContainer>
 
-      <FloatingButton
-        variant="contained"
-        onClick={handleCreate}
-        sx={{ display: presentations.length > 0 ? 'flex' : 'none' }}
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
+        PaperProps={{
+          sx: { borderRadius: '16px', padding: 1 }
+        }}
       >
-        <Add />
-      </FloatingButton>
-
-      <Footer>
-        <ThemeToggle onClick={toggleTheme}>
-          {theme === 'light' ? '🌙' : '☀️'}
-        </ThemeToggle>
-      </Footer>
-
-      <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
-        <DialogTitle>Confirmar exclusão</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 600 }}>Excluir apresentação?</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Tem certeza que deseja deletar a apresentação "{presentationToDelete?.title}"?
-            Esta ação não pode ser desfeita.
+            Você está prestes a excluir "<strong>{presentationToDelete?.title}</strong>".
+            Esta ação é irreversível e todos os dados de estatísticas serão perdidos.
           </DialogContentText>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDeleteDialogOpen(false)}>Cancelar</Button>
-          <Button onClick={handleDeleteConfirm} color="error" variant="contained">
-            Deletar
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button
+            onClick={() => setDeleteDialogOpen(false)}
+            sx={{ borderRadius: '8px', color: 'text.secondary' }}
+          >
+            Cancelar
+          </Button>
+          <Button
+            onClick={handleDeleteConfirm}
+            color="error"
+            variant="contained"
+            disableElevation
+            sx={{ borderRadius: '8px' }}
+          >
+            Excluir
           </Button>
         </DialogActions>
       </Dialog>

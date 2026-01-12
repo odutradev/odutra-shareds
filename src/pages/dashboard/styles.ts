@@ -1,83 +1,92 @@
-import { Box, Container, Button } from '@mui/material';
+import { Box, Container, Button, IconButton } from '@mui/material';
 import { styled } from '@mui/material/styles';
 
-export const DashboardContainer = styled(Box)({
+export const DashboardContainer = styled(Box)(({ theme }) => ({
   minHeight: '100vh',
+  backgroundColor: theme.palette.background.default,
   display: 'flex',
   flexDirection: 'column',
-  position: 'relative',
-});
+}));
 
 export const ContentContainer = styled(Container)(({ theme }) => ({
   flexGrow: 1,
-  paddingTop: theme.spacing(8),
-  paddingBottom: theme.spacing(12),
+  paddingTop: theme.spacing(5),
+  paddingBottom: theme.spacing(8),
   maxWidth: '1400px !important',
 }));
 
-export const EmptyState = styled(Box)({
+export const Header = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  marginBottom: theme.spacing(5),
+  [theme.breakpoints.down('sm')]: {
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+    gap: theme.spacing(3),
+  },
+}));
+
+export const TitleSection = styled(Box)({
+  display: 'flex',
+  flexDirection: 'column',
+});
+
+export const ActionSection = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(2),
+  [theme.breakpoints.down('sm')]: {
+    width: '100%',
+    justifyContent: 'space-between',
+  },
+}));
+
+export const EmptyState = styled(Box)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
   justifyContent: 'center',
-  minHeight: '70vh',
+  minHeight: '50vh',
   textAlign: 'center',
-});
+  backgroundColor: theme.palette.background.paper,
+  borderRadius: '16px',
+  border: `1px dashed ${theme.palette.divider}`,
+  padding: theme.spacing(6),
+  marginTop: theme.spacing(2),
+}));
 
 export const GridContainer = styled(Box)(({ theme }) => ({
   display: 'grid',
-  gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
+  gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))',
   gap: theme.spacing(3),
-  marginTop: theme.spacing(3),
 }));
 
-export const FloatingButton = styled(Button)(({ theme }) => ({
-  position: 'fixed',
-  bottom: theme.spacing(10),
-  right: theme.spacing(4),
-  width: '56px',
-  height: '56px',
-  minWidth: '56px',
-  borderRadius: '50%',
-  boxShadow: theme.shadows[8],
-  zIndex: 1000,
+export const ThemeButton = styled(IconButton)(({ theme }) => ({
+  border: `1px solid ${theme.palette.divider}`,
+  borderRadius: '12px',
+  padding: '10px',
+  color: theme.palette.text.primary,
+  transition: 'all 0.2s ease',
+  backgroundColor: theme.palette.background.paper,
   '&:hover': {
-    boxShadow: theme.shadows[12],
+    backgroundColor: theme.palette.action.hover,
+    borderColor: theme.palette.primary.main,
+    color: theme.palette.primary.main,
   },
 }));
 
-export const Footer = styled(Box)(({ theme }) => ({
-  position: 'fixed',
-  bottom: 0,
-  left: 0,
-  right: 0,
-  display: 'flex',
-  justifyContent: 'center',
-  alignItems: 'center',
-  padding: theme.spacing(2),
-  backgroundColor: 'transparent',
-  opacity: 0.6,
-  transition: 'opacity 0.3s ease',
+export const CreateButton = styled(Button)(({ theme }) => ({
+  height: '44px',
+  padding: '0 24px',
+  borderRadius: '12px',
+  textTransform: 'none',
+  fontSize: '0.95rem',
+  fontWeight: 600,
+  boxShadow: 'none',
+  border: `1px solid ${theme.palette.primary.main}`,
   '&:hover': {
-    opacity: 1,
-  },
-}));
-
-export const ThemeToggle = styled('button')(({ theme }) => ({
-  background: 'transparent',
-  border: 'none',
-  fontSize: '1.5rem',
-  cursor: 'pointer',
-  padding: theme.spacing(1),
-  borderRadius: '50%',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  transition: 'transform 0.2s ease',
-  '&:hover': {
-    transform: 'scale(1.2)',
-  },
-  '&:active': {
-    transform: 'scale(0.95)',
+    boxShadow: 'none',
+    backgroundColor: theme.palette.primary.dark,
   },
 }));
