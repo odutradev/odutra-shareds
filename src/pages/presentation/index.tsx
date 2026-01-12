@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { Typography, Button } from '@mui/material';
-import { Home, ErrorOutline } from '@mui/icons-material';
+import { useParams } from 'react-router-dom';
+import { Typography } from '@mui/material';
+import { ErrorOutline } from '@mui/icons-material';
 import { getPresentation } from '@actions/presentations';
 import { createAnalyticsEvent } from '@actions/analytics';
 import Loading from '@components/loading';
@@ -14,11 +14,12 @@ import type { Presentation } from '@actions/presentations/types';
 
 const PresentationPage = () => {
   const { id: slug } = useParams<{ id: string }>();
-  const navigate = useNavigate();
   const [presentation, setPresentation] = useState<Presentation | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
+
+  const lastSentTimeRef = useRef<number>(0);
 
   useEffect(() => {
     if (!slug) {
@@ -62,11 +63,11 @@ const PresentationPage = () => {
   useEffect(() => {
     if (!presentation) return;
 
-    const startTime = Date.now();
+    lastSentTimeRef.current = Date.now();
     const currentSlug = presentation.slug;
 
-    const sendAnalytics = () => {
-      const timeSpent = Math.floor((Date.now() - startTime) / 1000);
+    const sendAnalytics = (timeSpent: number) => {
+      if (timeSpent <= 0) return;
 
       createAnalyticsEvent({
         presentationId: currentSlug,
@@ -77,15 +78,33 @@ const PresentationPage = () => {
       }).catch(console.error);
     };
 
-    const handleBeforeUnload = () => {
-      sendAnalytics();
+    const intervalId = setInterval(() => {
+      const now = Date.now();
+
+
+      const duration = Math.floor((now - lastSentTimeRef.current) / 1000);
+
+      if (duration >= 30) {
+        sendAnalytics(duration);
+        lastSentTimeRef.current = now;
+      }
+    }, 30000);
+
+    const handleExit = () => {
+      const now = Date.now();
+      const duration = Math.floor((now - lastSentTimeRef.current) / 1000);
+      if (duration > 0) {
+        sendAnalytics(duration);
+        lastSentTimeRef.current = now;
+      }
     };
 
-    window.addEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener('beforeunload', handleExit);
 
     return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-      sendAnalytics();
+      clearInterval(intervalId);
+      window.removeEventListener('beforeunload', handleExit);
+      handleExit();
     };
   }, [presentation]);
 
