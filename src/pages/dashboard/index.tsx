@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Typography, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, IconButton } from '@mui/material';
+import { Typography, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
 import { Add } from '@mui/icons-material';
 import usePresentationsStore from '@stores/presentations';
 import { getAllPresentations, createPresentation, updatePresentation, deletePresentation } from '@actions/presentations';
@@ -41,7 +41,7 @@ const Dashboard = () => {
   const loadPresentations = async () => {
     setLoading(true);
     const result = await getAllPresentations();
-    if (result && !('error' in result)) {
+    if (result && Array.isArray(result)) {
       setPresentations(result);
     }
     setLoading(false);
@@ -61,7 +61,9 @@ const Dashboard = () => {
     if (selectedPresentation) {
       await useAction({
         action: () => updatePresentation(selectedPresentation._id, data),
-        callback: (updated) => updatePresentationInStore(updated),
+        callback: (updated) => {
+            if (updated && updated._id) updatePresentationInStore(updated);
+        },
         toastMessages: {
           pending: 'Atualizando apresentação...',
           success: 'Apresentação atualizada!',
@@ -71,7 +73,11 @@ const Dashboard = () => {
     } else {
       await useAction({
         action: () => createPresentation(data),
-        callback: (created) => addPresentation(created),
+        callback: (created) => {
+            if (created && created._id) {
+                addPresentation(created);
+            }
+        },
         toastMessages: {
           pending: 'Criando apresentação...',
           success: 'Apresentação criada!',
@@ -137,11 +143,11 @@ const Dashboard = () => {
           </EmptyState>
         ) : (
           <>
-            <Typography 
-              variant="h3" 
-              gutterBottom 
-              sx={{ 
-                fontWeight: 600, 
+            <Typography
+              variant="h3"
+              gutterBottom
+              sx={{
+                fontWeight: 600,
                 mb: 4,
                 pl: 1
               }}
@@ -149,14 +155,18 @@ const Dashboard = () => {
               Suas Apresentações
             </Typography>
             <GridContainer>
-              {presentations.map((presentation) => (
-                <PresentationCard
-                  key={presentation._id}
-                  presentation={presentation}
-                  onEdit={handleEdit}
-                  onDelete={handleDeleteClick}
-                />
-              ))}
+              {presentations.map((presentation) => {
+
+                if (!presentation || !presentation._id) return null;
+                return (
+                  <PresentationCard
+                    key={presentation._id}
+                    presentation={presentation}
+                    onEdit={handleEdit}
+                    onDelete={handleDeleteClick}
+                  />
+                );
+              })}
             </GridContainer>
           </>
         )}

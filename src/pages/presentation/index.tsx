@@ -47,7 +47,13 @@ const PresentationPage = () => {
     setLoading(true);
     const result = await getPresentation(id);
 
-    if (result && 'error' in result) {
+    if (!result) {
+        setError('Erro ao carregar apresentação');
+        setLoading(false);
+        return;
+    }
+
+    if ('error' in result) {
       setError('Apresentação não encontrada');
       setLoading(false);
       return;

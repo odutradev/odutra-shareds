@@ -12,6 +12,7 @@ import {
   Typography,
   Chip,
   Stack,
+  CircularProgress,
 } from '@mui/material';
 import { Close, Code, Style, Javascript } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
@@ -168,6 +169,7 @@ const PresentationForm = ({ open, onClose, onSubmit, presentation }: Presentatio
   });
   const [idError, setIdError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [checkingId, setCheckingId] = useState(false);
   const [activeEditor, setActiveEditor] = useState<'html' | 'css' | 'js'>('html');
 
   useEffect(() => {
@@ -183,34 +185,49 @@ const PresentationForm = ({ open, onClose, onSubmit, presentation }: Presentatio
     }
   }, [presentation, open]);
 
-  const handleIdChange = async (value: string) => {
-    const lowercaseValue = value.toLowerCase();
-    setFormData((prev) => ({ ...prev, id: lowercaseValue }));
+  useEffect(() => {
+    const currentId = formData.id;
 
-    if (!validateLocalId(lowercaseValue)) {
-      setIdError('ID inválido');
-      return;
-    }
-
-    if (presentation && lowercaseValue === presentation.id) {
+    if (!currentId || (presentation && currentId === presentation.id)) {
       setIdError('');
       return;
     }
 
-    try {
-      const available = await checkIdAvailable(lowercaseValue);
-      if (typeof available === 'boolean' && !available) {
-        setIdError('ID já está em uso');
-      } else {
+    if (!validateLocalId(currentId)) {
+        setIdError('ID deve ter 3-12 caracteres (letras e números minúsculos)');
+        return;
+    }
+
+    setIdError('');
+    setCheckingId(true);
+
+    const timer = setTimeout(async () => {
+      try {
+        const available = await checkIdAvailable(currentId);
+
+        if (available === false) {
+          setIdError('ID já está em uso');
+        } else {
+          setIdError('');
+        }
+      } catch (error) {
+
         setIdError('');
+      } finally {
+        setCheckingId(false);
       }
-    } catch (error) {
-      setIdError('');
-    }
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [formData.id, presentation]);
+
+  const handleIdChange = (value: string) => {
+    const lowercaseValue = value.toLowerCase().replace(/[^a-z0-9]/g, '');
+    setFormData((prev) => ({ ...prev, id: lowercaseValue }));
   };
 
   const handleSubmit = async () => {
-    if (!formData.title || !formData.html || !formData.id || idError) {
+    if (!formData.title || !formData.html || !formData.id || idError || checkingId) {
       return;
     }
 
@@ -296,12 +313,15 @@ const PresentationForm = ({ open, onClose, onSubmit, presentation }: Presentatio
                 value={formData.id}
                 onChange={(e) => handleIdChange(e.target.value)}
                 error={!!idError}
-                helperText={idError}
+                helperText={idError || (checkingId ? 'Verificando disponibilidade...' : '')}
                 required
                 sx={{ flexGrow: 1 }}
                 inputProps={{ maxLength: 12 }}
                 variant="outlined"
                 placeholder="Ex: abc123"
+                InputProps={{
+                  endAdornment: checkingId ? <CircularProgress size={20} /> : null
+                }}
               />
             </Box>
           </Box>
@@ -396,7 +416,7 @@ const PresentationForm = ({ open, onClose, onSubmit, presentation }: Presentatio
           onClick={handleSubmit}
           variant="contained"
           size="large"
-          disabled={!formData.title || !formData.html || !formData.id || !!idError || loading}
+          disabled={!formData.title || !formData.html || !formData.id || !!idError || checkingId || loading}
         >
           {presentation ? 'Salvar Alterações' : 'Criar Apresentação'}
         </Button>

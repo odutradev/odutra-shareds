@@ -8,30 +8,42 @@ const usePresentationsStore = create<PresentationsStore>((set) => ({
 
   setPresentations: (presentations: Presentation[]) =>
     set((state) => ({
-      presentations: { ...state.presentations, presentations },
+      presentations: { ...state.presentations, presentations: presentations || [] },
     })),
 
   addPresentation: (presentation: Presentation) =>
-    set((state) => ({
-      presentations: {
-        ...state.presentations,
-        presentations: [presentation, ...state.presentations.presentations],
-      },
-    })),
+    set((state) => {
+
+      if (!presentation || !presentation._id) {
+        console.warn('Tentativa de adicionar apresentação inválida ao store:', presentation);
+        return state;
+      }
+
+      return {
+        presentations: {
+          ...state.presentations,
+          presentations: [presentation, ...state.presentations.presentations],
+        },
+      };
+    }),
 
   updatePresentationInStore: (presentation: Presentation) =>
-    set((state) => ({
-      presentations: {
-        ...state.presentations,
-        presentations: state.presentations.presentations.map((p) =>
-          p._id === presentation._id ? presentation : p
-        ),
-        selectedPresentation:
-          state.presentations.selectedPresentation?._id === presentation._id
-            ? presentation
-            : state.presentations.selectedPresentation,
-      },
-    })),
+    set((state) => {
+      if (!presentation || !presentation._id) return state;
+
+      return {
+        presentations: {
+          ...state.presentations,
+          presentations: state.presentations.presentations.map((p) =>
+            p._id === presentation._id ? presentation : p
+          ),
+          selectedPresentation:
+            state.presentations.selectedPresentation?._id === presentation._id
+              ? presentation
+              : state.presentations.selectedPresentation,
+        },
+      };
+    }),
 
   removePresentation: (_id: string) =>
     set((state) => ({
