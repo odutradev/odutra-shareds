@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Typography, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
 import { Add } from '@mui/icons-material';
 import usePresentationsStore from '@stores/presentations';
-import { getAllPresentations, createPresentation, updatePresentation, deletePresentation } from '@actions/presentations';
+import { getAllPresentations, deletePresentation } from '@actions/presentations';
 import useAction from '@hooks/useAction';
 import Loading from '@components/loading';
 import PresentationCard from './components/PresentationCard';
-import PresentationForm from './components/PresentationForm';
 import {
   DashboardContainer,
   ContentContainer,
@@ -16,20 +16,17 @@ import {
   Footer,
   ThemeToggle,
 } from './styles';
-import type { Presentation, CreatePresentationData } from '@actions/presentations/types';
+import type { Presentation } from '@actions/presentations/types';
 
 const Dashboard = () => {
   const {
-    presentations: { presentations, selectedPresentation, loading },
+    presentations: { presentations, loading },
     setPresentations,
-    addPresentation,
-    updatePresentationInStore,
     removePresentation,
-    setSelectedPresentation,
     setLoading,
   } = usePresentationsStore();
 
-  const [formOpen, setFormOpen] = useState(false);
+  const navigate = useNavigate();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [presentationToDelete, setPresentationToDelete] = useState<Presentation | null>(null);
   const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'dark');
@@ -48,43 +45,11 @@ const Dashboard = () => {
   };
 
   const handleCreate = () => {
-    setSelectedPresentation(null);
-    setFormOpen(true);
+    navigate('/dashboard/edit');
   };
 
   const handleEdit = (presentation: Presentation) => {
-    setSelectedPresentation(presentation);
-    setFormOpen(true);
-  };
-
-  const handleSubmit = async (data: CreatePresentationData) => {
-    if (selectedPresentation) {
-      await useAction({
-        action: () => updatePresentation(selectedPresentation._id, data),
-        callback: (updated) => {
-            if (updated && updated._id) updatePresentationInStore(updated);
-        },
-        toastMessages: {
-          pending: 'Atualizando apresentação...',
-          success: 'Apresentação atualizada!',
-          error: 'Erro ao atualizar apresentação',
-        },
-      });
-    } else {
-      await useAction({
-        action: () => createPresentation(data),
-        callback: (created) => {
-            if (created && created._id) {
-                addPresentation(created);
-            }
-        },
-        toastMessages: {
-          pending: 'Criando apresentação...',
-          success: 'Apresentação criada!',
-          error: 'Erro ao criar apresentação',
-        },
-      });
-    }
+    navigate(`/dashboard/edit?slug=${presentation.slug}`);
   };
 
   const handleDeleteClick = (presentation: Presentation) => {
@@ -156,7 +121,6 @@ const Dashboard = () => {
             </Typography>
             <GridContainer>
               {presentations.map((presentation) => {
-
                 if (!presentation || !presentation._id) return null;
                 return (
                   <PresentationCard
@@ -185,13 +149,6 @@ const Dashboard = () => {
           {theme === 'light' ? '🌙' : '☀️'}
         </ThemeToggle>
       </Footer>
-
-      <PresentationForm
-        open={formOpen}
-        onClose={() => setFormOpen(false)}
-        onSubmit={handleSubmit}
-        presentation={selectedPresentation}
-      />
 
       <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
         <DialogTitle>Confirmar exclusão</DialogTitle>

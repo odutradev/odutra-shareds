@@ -1,5 +1,6 @@
 import NotFound from "@pages/notFound";
 import Dashboard from "@pages/dashboard";
+import PresentationEditor from "@pages/dashboard/editor";
 import PresentationPage from "@pages/presentation";
 import Home from "@pages/home";
 
@@ -10,6 +11,7 @@ const routes = [
         routes: [
             ['/', <Home />],
             ['/dashboard/projects', <Dashboard />],
+            ['/dashboard/edit', <PresentationEditor />],
             ['/:id', <PresentationPage />],
             ['/not-found', <NotFound />],
         ]
