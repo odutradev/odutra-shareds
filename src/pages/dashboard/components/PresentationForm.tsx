@@ -8,18 +8,15 @@ import {
   Button,
   Box,
   Switch,
-  FormControlLabel,
   IconButton,
-  Tooltip,
   Typography,
   Chip,
   Stack,
 } from '@mui/material';
-import { Refresh, Close, Code, Style, Javascript } from '@mui/icons-material';
+import { Close, Code, Style, Javascript } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
 import CodeEditor from '@components/codeEditor';
 import type { Presentation, CreatePresentationData } from '@actions/presentations/types';
-import { generateId, isValidId } from '@utils/functions/idGenerator';
 import { checkIdAvailable } from '@actions/presentations';
 
 interface PresentationFormProps {
@@ -156,6 +153,10 @@ const StatusSwitch = styled(Switch, {
   },
 }));
 
+const validateLocalId = (id: string): boolean => {
+  return /^[a-z0-9]{3,12}$/.test(id);
+};
+
 const PresentationForm = ({ open, onClose, onSubmit, presentation }: PresentationFormProps) => {
   const [formData, setFormData] = useState<CreatePresentationData>({
     id: '',
@@ -179,32 +180,15 @@ const PresentationForm = ({ open, onClose, onSubmit, presentation }: Presentatio
         js: presentation.js || '',
         isActive: presentation.isActive,
       });
-    } else if (open && !presentation) {
-      handleGenerateId();
     }
   }, [presentation, open]);
-
-  const handleGenerateId = async () => {
-    for (let i = 0; i < 10; i++) {
-      const newId = generateId(6);
-      const result = await checkIdAvailable(newId);
-      
-      if (!('error' in result) && result === true) {
-        setFormData((prev) => ({ ...prev, id: newId }));
-        setIdError('');
-        return;
-      }
-    }
-    
-    setIdError('Erro ao gerar ID. Tente novamente.');
-  };
 
   const handleIdChange = async (value: string) => {
     const lowercaseValue = value.toLowerCase();
     setFormData((prev) => ({ ...prev, id: lowercaseValue }));
 
-    if (!isValidId(lowercaseValue)) {
-      setIdError('ID deve ter entre 3-12 caracteres (letras e números)');
+    if (!validateLocalId(lowercaseValue)) {
+      setIdError('ID inválido');
       return;
     }
 
@@ -213,10 +197,14 @@ const PresentationForm = ({ open, onClose, onSubmit, presentation }: Presentatio
       return;
     }
 
-    const available = await checkIdAvailable(lowercaseValue);
-    if (typeof available === 'boolean' && !available) {
-      setIdError('ID já está em uso');
-    } else {
+    try {
+      const available = await checkIdAvailable(lowercaseValue);
+      if (typeof available === 'boolean' && !available) {
+        setIdError('ID já está em uso');
+      } else {
+        setIdError('');
+      }
+    } catch (error) {
       setIdError('');
     }
   };
@@ -285,7 +273,7 @@ const PresentationForm = ({ open, onClose, onSubmit, presentation }: Presentatio
           <Close />
         </IconButton>
       </StyledDialogTitle>
-      
+
       <StyledDialogContent>
         <Stack spacing={3}>
           <TextField
@@ -308,28 +296,13 @@ const PresentationForm = ({ open, onClose, onSubmit, presentation }: Presentatio
                 value={formData.id}
                 onChange={(e) => handleIdChange(e.target.value)}
                 error={!!idError}
-                helperText={idError || 'Entre 3-12 caracteres (letras e números)'}
+                helperText={idError}
                 required
                 sx={{ flexGrow: 1 }}
                 inputProps={{ maxLength: 12 }}
                 variant="outlined"
                 placeholder="Ex: abc123"
               />
-              {!presentation && (
-                <Tooltip title="Gerar ID aleatório">
-                  <IconButton 
-                    onClick={handleGenerateId} 
-                    color="primary"
-                    sx={{ 
-                      mt: 0.5,
-                      border: '1px solid',
-                      borderColor: 'divider',
-                    }}
-                  >
-                    <Refresh />
-                  </IconButton>
-                </Tooltip>
-              )}
             </Box>
           </Box>
 
@@ -343,9 +316,9 @@ const PresentationForm = ({ open, onClose, onSubmit, presentation }: Presentatio
               </Typography>
             </Box>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Typography 
-                variant="body2" 
-                sx={{ 
+              <Typography
+                variant="body2"
+                sx={{
                   color: formData.isActive ? 'success.main' : 'error.main',
                   fontWeight: 600,
                   minWidth: '60px',
@@ -356,7 +329,7 @@ const PresentationForm = ({ open, onClose, onSubmit, presentation }: Presentatio
               </Typography>
               <StatusSwitch
                 checked={formData.isActive}
-                onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
+                onChange={(e: any) => setFormData({ ...formData, isActive: e.target.checked })}
               />
             </Box>
           </StatusToggleContainer>
@@ -397,9 +370,9 @@ const PresentationForm = ({ open, onClose, onSubmit, presentation }: Presentatio
                 </Typography>
               </Box>
               {activeEditor !== 'html' && (
-                <Chip 
-                  label="Opcional" 
-                  size="small" 
+                <Chip
+                  label="Opcional"
+                  size="small"
                   sx={{ ml: 'auto', height: 20, fontSize: '0.7rem' }}
                 />
               )}
