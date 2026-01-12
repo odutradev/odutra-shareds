@@ -5,8 +5,22 @@ import type { ViewEvent, TimeEvent, CreateViewData, CreateTimeData, Presentation
 import type { TypeOrError } from '@utils/types/action';
 
 const extractList = (response: any) => {
-    const list = response.data?.result || response.data?.data;
-    return Array.isArray(list) ? list : [];
+
+
+    const responseBody = response.data;
+
+    if (Array.isArray(responseBody)) return responseBody;
+
+    return responseBody?.result || responseBody?.data || [];
+};
+
+
+const normalizeEvent = (item: any): any => {
+  if (!item) return {};
+  return {
+    _id: item._id,
+    ...item.data
+  };
 };
 
 export const createViewEvent = async (data: CreateViewData): TypeOrError<ViewEvent> => {
@@ -36,8 +50,8 @@ export const getPresentationStats = async (presentationId: string): TypeOrError<
       api.get(`/kv/analytics_time/get-all?presentationId=${encodedId}&pagination=false`)
     ]);
 
-    const views: ViewEvent[] = extractList(viewsResponse);
-    const times: TimeEvent[] = extractList(timeResponse);
+    const views: ViewEvent[] = extractList(viewsResponse).map(normalizeEvent);
+    const times: TimeEvent[] = extractList(timeResponse).map(normalizeEvent);
 
     const totalViews = views.length;
 
@@ -82,11 +96,13 @@ export const getPresentationStats = async (presentationId: string): TypeOrError<
 
       const data = historyMap.get(dateStr) || { views: 0, totalTime: 0, countTime: 0 };
 
+      const avgTime = data.views > 0 ? Math.round(data.totalTime / data.views) : 0;
+
       history.push({
         date: dateDisplay,
         fullDate: dateStr,
         views: data.views,
-        avgTime: data.countTime > 0 ? Math.round(data.totalTime / data.countTime) : 0
+        avgTime: avgTime
       });
     }
 
