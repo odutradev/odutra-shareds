@@ -20,6 +20,7 @@ const PresentationPage = () => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
   const lastSentTimeRef = useRef<number>(0);
+  const viewRecordedSlugRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (!slug) {
@@ -64,12 +65,17 @@ const PresentationPage = () => {
     if (!presentation) return;
 
     const currentSlug = presentation.slug;
-    createViewEvent({
-      presentationId: currentSlug,
-      viewedAt: new Date().toISOString(),
-      userAgent: navigator.userAgent,
-      referrer: document.referrer,
-    }).catch(console.error);
+
+    if (viewRecordedSlugRef.current !== currentSlug) {
+      createViewEvent({
+        presentationId: currentSlug,
+        viewedAt: new Date().toISOString(),
+        userAgent: navigator.userAgent,
+        referrer: document.referrer,
+      }).catch(console.error);
+
+      viewRecordedSlugRef.current = currentSlug;
+    }
 
     lastSentTimeRef.current = Date.now();
 

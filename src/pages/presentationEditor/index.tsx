@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   TextField,
@@ -20,10 +20,26 @@ import {
   CheckCircle,
   Error as ErrorIcon,
   Casino,
+  Timeline,
+  AccessTime,
+  Visibility,
+  Refresh
 } from '@mui/icons-material';
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip as RechartsTooltip,
+  ResponsiveContainer
+} from 'recharts';
+
 import CodeEditor from '@components/codeEditor';
 import type { CreatePresentationData } from '@actions/presentations/types';
+import type { PresentationAnalytics } from '@actions/analytics/types';
 import { checkIdAvailable, createPresentation, updatePresentation, getPresentation } from '@actions/presentations';
+import { getPresentationStats } from '@actions/analytics';
 import useAction from '@hooks/useAction';
 import Loading from '@components/loading';
 
@@ -37,6 +53,11 @@ import {
   EditorLabel,
   StatusToggleContainer,
   StatusSwitch,
+  DashboardGrid,
+  MetricCard,
+  ChartContainer,
+  MetricValue,
+  MetricLabel
 } from './styles';
 
 const PresentationEditor = () => {
@@ -60,6 +81,9 @@ const PresentationEditor = () => {
   const [checkingSlug, setCheckingSlug] = useState(false);
   const [activeEditor, setActiveEditor] = useState<'html' | 'css' | 'js'>('html');
 
+  const [stats, setStats] = useState<PresentationAnalytics | null>(null);
+  const [loadingStats, setLoadingStats] = useState(false);
+
   useEffect(() => {
     if (editSlug) {
       loadPresentation(editSlug);
@@ -80,8 +104,9 @@ const PresentationEditor = () => {
           isActive: result.isActive,
         });
         setPresentationId(result._id);
-      } else {
 
+        loadStats(result.slug);
+      } else {
         console.error("Apresentação não encontrada");
         navigate('/dashboard/projects');
       }
@@ -90,6 +115,20 @@ const PresentationEditor = () => {
       navigate('/dashboard/projects');
     } finally {
       setInitialLoading(false);
+    }
+  };
+
+  const loadStats = async (slug: string) => {
+    setLoadingStats(true);
+    try {
+      const result = await getPresentationStats(slug);
+      if (result && !('error' in result)) {
+        setStats(result);
+      }
+    } catch (e) {
+      console.error("Failed to load stats", e);
+    } finally {
+      setLoadingStats(false);
     }
   };
 
@@ -117,7 +156,6 @@ const PresentationEditor = () => {
         }
       } catch (error) {
         console.error("Erro na verificação do slug", error);
-
         setSlugError('');
       } finally {
         setCheckingSlug(false);
@@ -128,7 +166,6 @@ const PresentationEditor = () => {
   }, [formData.slug, editSlug]);
 
   const handleSlugChange = (value: string) => {
-
     const normalized = value.toLowerCase().replace(/[^a-z0-9-]/g, '-');
     setFormData((prev) => ({ ...prev, slug: normalized }));
   };
@@ -139,7 +176,6 @@ const PresentationEditor = () => {
   };
 
   const handleSubmit = async () => {
-
     if (!formData.title || !formData.html || !formData.slug) {
       return;
     }
@@ -177,6 +213,11 @@ const PresentationEditor = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const formatTime = (seconds: number) => {
+    if (seconds < 60) return `${seconds}s`;
+    return `${Math.round(seconds / 60)}m`;
   };
 
   const editorConfig = {
@@ -250,6 +291,73 @@ const PresentationEditor = () => {
 
         <ContentArea>
           <Stack spacing={3}>
+            {}
+            {presentationId && (
+              <Box>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                  <Timeline color="primary" />
+                  <Typography variant="subtitle1" fontWeight="600">
+                    Métricas (Últimos 14 dias)
+                  </Typography>
+                  <IconButton size="small" onClick={() => loadStats(formData.slug)} disabled={loadingStats}>
+                     <Refresh fontSize="small" sx={{ animation: loadingStats ? 'spin 1s linear infinite' : 'none', '@keyframes spin': { '0%': { transform: 'rotate(0deg)' }, '100%': { transform: 'rotate(360deg)' } } }} />
+                  </IconButton>
+                </Box>
+
+                <DashboardGrid>
+                  <MetricCard>
+                    <Box className="icon-wrapper view">
+                      <Visibility />
+                    </Box>
+                    <Box>
+                      <MetricLabel>Total de Visualizações</MetricLabel>
+                      <MetricValue>{stats?.totalViews || 0}</MetricValue>
+                    </Box>
+                  </MetricCard>
+
+                  <MetricCard>
+                    <Box className="icon-wrapper time">
+                      <AccessTime />
+                    </Box>
+                    <Box>
+                      <MetricLabel>Tempo Médio</MetricLabel>
+                      <MetricValue>{formatTime(stats?.avgTimeSpent || 0)}</MetricValue>
+                    </Box>
+                  </MetricCard>
+
+                  <ChartContainer>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <AreaChart data={stats?.history || []}>
+                        <defs>
+                          <linearGradient id="colorViews" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#8884d8" stopOpacity={0.8}/>
+                            <stop offset="95%" stopColor="#8884d8" stopOpacity={0}/>
+                          </linearGradient>
+                        </defs>
+                        <XAxis
+                          dataKey="date"
+                          tick={{ fontSize: 10 }}
+                          tickLine={false}
+                          axisLine={false}
+                        />
+                        <RechartsTooltip
+                          contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+                        />
+                        <Area
+                          type="monotone"
+                          dataKey="views"
+                          stroke="#8884d8"
+                          fillOpacity={1}
+                          fill="url(#colorViews)"
+                          strokeWidth={2}
+                        />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  </ChartContainer>
+                </DashboardGrid>
+              </Box>
+            )}
+
             <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '2fr 1fr' }, gap: 3 }}>
               <TextField
                 label="Título"

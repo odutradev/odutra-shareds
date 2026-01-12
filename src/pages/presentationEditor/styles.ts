@@ -1,4 +1,4 @@
-import { Box, Button, Switch, Container, Paper } from '@mui/material';
+import { Box, Button, Switch, Container, Paper, Typography } from '@mui/material';
 import { styled } from '@mui/material/styles';
 
 export const EditorContainer = styled(Container)(({ theme }) => ({
@@ -111,4 +111,71 @@ export const StatusSwitch = styled(Switch)(({ theme }) => ({
       duration: 500,
     }),
   },
+}));
+
+export const DashboardGrid = styled(Box)(({ theme }) => ({
+  display: 'grid',
+  gridTemplateColumns: '1fr 1fr 2fr',
+  gap: theme.spacing(2),
+  marginBottom: theme.spacing(4),
+  [theme.breakpoints.down('md')]: {
+    gridTemplateColumns: '1fr 1fr',
+  },
+  [theme.breakpoints.down('sm')]: {
+    gridTemplateColumns: '1fr',
+  },
+}));
+
+export const MetricCard = styled(Paper)(({ theme }) => ({
+  padding: theme.spacing(2),
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(2),
+  borderRadius: '12px',
+  border: `1px solid ${theme.palette.divider}`,
+  boxShadow: 'none',
+  backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.01)',
+
+  '& .icon-wrapper': {
+    width: 48,
+    height: 48,
+    borderRadius: '12px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+
+    '&.view': {
+      backgroundColor: 'rgba(136, 132, 216, 0.1)',
+      color: '#8884d8',
+    },
+    '&.time': {
+      backgroundColor: 'rgba(130, 202, 157, 0.1)',
+      color: '#82ca9d',
+    }
+  }
+}));
+
+export const MetricValue = styled(Typography)(({ theme }) => ({
+  fontSize: '1.5rem',
+  fontWeight: 700,
+  lineHeight: 1.2,
+}));
+
+export const MetricLabel = styled(Typography)(({ theme }) => ({
+  fontSize: '0.875rem',
+  color: theme.palette.text.secondary,
+  fontWeight: 500,
+}));
+
+export const ChartContainer = styled(Paper)(({ theme }) => ({
+  padding: theme.spacing(2),
+  height: 250,
+  borderRadius: '12px',
+  border: `1px solid ${theme.palette.divider}`,
+  boxShadow: 'none',
+  backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.01)',
+  [theme.breakpoints.down('md')]: {
+    gridColumn: '1 / -1',
+    height: 200,
+  }
 }));

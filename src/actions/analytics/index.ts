@@ -1,9 +1,8 @@
 import { manageActionError } from '@utils/functions/action';
 import api from '@utils/functions/api';
 
-import type { ViewEvent, TimeEvent, CreateViewData, CreateTimeData } from './types';
+import type { ViewEvent, TimeEvent, CreateViewData, CreateTimeData, PresentationAnalytics, DailyMetric } from './types';
 import type { TypeOrError } from '@utils/types/action';
-import type { PresentationStats } from '../presentations/types';
 
 const extractList = (response: any) => {
     const list = response.data?.result || response.data?.data;
@@ -28,27 +27,21 @@ export const createTimeEvent = async (data: CreateTimeData): TypeOrError<TimeEve
   }
 };
 
-export const getPresentationStats = async (presentationId: string): TypeOrError<PresentationStats> => {
+export const getPresentationStats = async (presentationId: string): TypeOrError<PresentationAnalytics> => {
   try {
+    const encodedId = encodeURIComponent(presentationId);
 
     const [viewsResponse, timeResponse] = await Promise.all([
-      api.get(`/kv/analytics_views/get-all?presentationId=${presentationId}&pagination=false`),
-      api.get(`/kv/analytics_time/get-all?presentationId=${presentationId}&pagination=false`)
+      api.get(`/kv/analytics_views/get-all?presentationId=${encodedId}&pagination=false`),
+      api.get(`/kv/analytics_time/get-all?presentationId=${encodedId}&pagination=false`)
     ]);
 
     const views: ViewEvent[] = extractList(viewsResponse);
     const times: TimeEvent[] = extractList(timeResponse);
 
-    if (views.length === 0) {
-      return {
-        totalViews: 0,
-        avgTimeSpent: 0,
-      };
-    }
-
     const totalViews = views.length;
 
-    const totalTime = times.reduce((sum, event) => sum + (event.timeSpent || 0), 0);
+    const totalTime = times.reduce((sum, event) => sum + (Number(event.timeSpent) || 0), 0);
 
     const avgTimeSpent = totalViews > 0 ? Math.round(totalTime / totalViews) : 0;
 
@@ -58,10 +51,50 @@ export const getPresentationStats = async (presentationId: string): TypeOrError<
 
     const lastViewed = sortedViews[0]?.viewedAt;
 
+    const historyMap = new Map<string, { views: number; totalTime: number; countTime: number }>();
+
+    views.forEach(v => {
+      try {
+        const date = v.viewedAt ? v.viewedAt.split('T')[0] : new Date().toISOString().split('T')[0];
+        const entry = historyMap.get(date) || { views: 0, totalTime: 0, countTime: 0 };
+        entry.views++;
+        historyMap.set(date, entry);
+      } catch (e) { console.error('Erro ao processar data view', e) }
+    });
+
+    times.forEach(t => {
+      try {
+        const date = t.recordedAt ? t.recordedAt.split('T')[0] : new Date().toISOString().split('T')[0];
+        const entry = historyMap.get(date) || { views: 0, totalTime: 0, countTime: 0 };
+        entry.totalTime += Number(t.timeSpent) || 0;
+        entry.countTime++;
+        historyMap.set(date, entry);
+      } catch (e) { console.error('Erro ao processar data time', e) }
+    });
+
+    const history: DailyMetric[] = [];
+
+    for(let i=13; i>=0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const dateStr = d.toISOString().split('T')[0];
+      const dateDisplay = `${d.getDate()}/${d.getMonth()+1}`;
+
+      const data = historyMap.get(dateStr) || { views: 0, totalTime: 0, countTime: 0 };
+
+      history.push({
+        date: dateDisplay,
+        fullDate: dateStr,
+        views: data.views,
+        avgTime: data.countTime > 0 ? Math.round(data.totalTime / data.countTime) : 0
+      });
+    }
+
     return {
       totalViews,
       avgTimeSpent,
       lastViewed,
+      history
     };
   } catch (error) {
     return manageActionError(error);
