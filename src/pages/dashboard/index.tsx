@@ -13,6 +13,7 @@ import {
 } from '@mui/material';
 import { Add, DarkMode, LightMode, Settings } from '@mui/icons-material';
 import useSharedsStore from '@stores/shareds';
+import useSystemStore from '@stores/system';
 import { getAllShareds, deleteShared } from '@actions/shareds';
 import useAction from '@hooks/useAction';
 import Loading from '@components/loading';
@@ -38,10 +39,11 @@ const Dashboard = () => {
     setLoading,
   } = useSharedsStore();
 
+  const { system: { theme }, toggleTheme } = useSystemStore();
+
   const navigate = useNavigate();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [sharedToDelete, setSharedToDelete] = useState<Shared | null>(null);
-  const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'dark');
 
   useEffect(() => {
     loadShareds();
@@ -84,13 +86,6 @@ const Dashboard = () => {
 
     setDeleteDialogOpen(false);
     setSharedToDelete(null);
-  };
-
-  const toggleTheme = () => {
-    const newTheme = theme === 'light' ? 'dark' : 'light';
-    setTheme(newTheme);
-    localStorage.setItem('theme', newTheme);
-    window.location.reload();
   };
 
   if (loading) {
