@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Typography,
@@ -19,10 +19,11 @@ import {
   Slideshow,
   Visibility,
   AccessTime,
-  Warning
+  Warning,
+  CloudUpload
 } from '@mui/icons-material';
 import useAction from '@hooks/useAction';
-import { getSystemMetrics, performBackup, clearCollection, deleteProject } from '@actions/settings';
+import { getSystemMetrics, performBackup, restoreBackup, clearCollection, deleteProject } from '@actions/settings';
 import type { SystemMetrics } from '@actions/settings/types';
 import {
   SettingsContainer,
@@ -38,6 +39,7 @@ import {
 
 const Settings = () => {
   const navigate = useNavigate();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [metrics, setMetrics] = useState<SystemMetrics | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -73,6 +75,26 @@ const Settings = () => {
     });
   };
 
+  const handleImportClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    event.target.value = '';
+
+    openConfirmDialog(
+        'Restaurar Backup',
+        'Isso irá adicionar os dados do arquivo ao seu sistema atual. Dados duplicados (como slugs de apresentações já existentes) podem gerar erros ou serem ignorados. Deseja continuar?',
+        async () => {
+             await restoreBackup(file);
+             loadMetrics();
+        }
+    );
+  };
+
   const openConfirmDialog = (
     title: string,
     message: string,
@@ -85,12 +107,11 @@ const Settings = () => {
             await useAction({
                 action: actionFn,
                 callback: () => {
-                    loadMetrics();
                     setDialogOpen(false);
                 },
                 toastMessages: {
                     pending: 'Processando...',
-                    success: 'Operação realizada com sucesso!',
+                    success: 'Operação realizada!',
                     error: 'Erro ao realizar operação'
                 }
             });
@@ -103,7 +124,10 @@ const Settings = () => {
     openConfirmDialog(
         'Limpar Histórico de Views',
         'Tem certeza que deseja apagar todos os registros de visualizações? Isso zerará as contagens de views.',
-        () => clearCollection('analytics_views')
+        async () => {
+            await clearCollection('analytics_views');
+            loadMetrics();
+        }
     );
   };
 
@@ -111,7 +135,10 @@ const Settings = () => {
     openConfirmDialog(
         'Limpar Registros de Tempo',
         'Tem certeza que deseja apagar todos os registros de tempo? As estatísticas de tempo médio serão perdidas.',
-        () => clearCollection('analytics_time')
+        async () => {
+            await clearCollection('analytics_time');
+            loadMetrics();
+        }
     );
   };
 
@@ -191,6 +218,27 @@ const Settings = () => {
 
           <ActionRow>
             <Box>
+              <Typography variant="subtitle1" fontWeight={600}>Restaurar Backup</Typography>
+              <Typography variant="body2" color="text.secondary">
+                Importe um arquivo JSON para restaurar apresentações e métricas antigas.
+              </Typography>
+            </Box>
+            <Box>
+                <input
+                    type="file"
+                    accept=".json"
+                    ref={fileInputRef}
+                    style={{ display: 'none' }}
+                    onChange={handleFileChange}
+                />
+                <Button variant="outlined" startIcon={<CloudUpload />} onClick={handleImportClick}>
+                Importar Dados
+                </Button>
+            </Box>
+          </ActionRow>
+
+          <ActionRow>
+            <Box>
               <Typography variant="subtitle1" fontWeight={600}>Limpar Visualizações</Typography>
               <Typography variant="body2" color="text.secondary">
                 Remove todo o histórico de quem acessou suas apresentações.
@@ -249,7 +297,7 @@ const Settings = () => {
           <Button
             onClick={dialogConfig?.action}
             variant="contained"
-            color="error"
+            color={dialogConfig?.title.includes("Restaurar") ? "primary" : "error"}
             disableElevation
             sx={{ borderRadius: '8px' }}
           >

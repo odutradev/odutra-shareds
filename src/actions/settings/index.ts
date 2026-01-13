@@ -56,6 +56,46 @@ export const performBackup = async (): Promise<void> => {
     document.body.removeChild(a);
 };
 
+export const restoreBackup = async (file: File): TypeOrError<void> => {
+    try {
+        const text = await file.text();
+        const data = JSON.parse(text);
+
+        const collections = ['presentations', 'analytics_views', 'analytics_time'];
+
+        const hasValidData = collections.some(col => Array.isArray(data[col]) && data[col].length > 0);
+        if (!hasValidData) {
+            throw new Error("O arquivo não contém dados válidos ou está vazio.");
+        }
+
+        for (const col of collections) {
+            const items = data[col];
+            if (Array.isArray(items)) {
+                await Promise.all(items.map(async (item: any) => {
+
+
+
+                    if (item.data) {
+                        try {
+                            await api.post(`/kv/${col}/create`, {
+                                data: item.data,
+
+                                createdAt: item.createdAt
+                            });
+                        } catch (e) {
+                            console.warn(`Falha ao restaurar item em ${col}:`, e);
+
+                        }
+                    }
+                }));
+            }
+        }
+    } catch (error) {
+        console.error("Erro na restauração:", error);
+        return manageActionError(error);
+    }
+};
+
 export const clearCollection = async (collection: string): TypeOrError<void> => {
     try {
         await api.delete(`/kv/${collection}/delete-all`);
