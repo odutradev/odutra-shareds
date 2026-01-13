@@ -41,6 +41,7 @@ const App = () => {
     <ThemeProvider theme={activeTheme}>
       <ToastContainer {...toastContainerConfig} />
       <CssBaseline />
+      <title>Shareds</title>
 
       <Router />
 <GlobalStyles />
