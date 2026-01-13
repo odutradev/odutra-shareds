@@ -1,19 +1,13 @@
 import { manageActionError } from '@utils/functions/action';
 import api from '@utils/functions/api';
-
 import type { ViewEvent, TimeEvent, CreateViewData, CreateTimeData, PresentationAnalytics, DailyMetric } from './types';
 import type { TypeOrError } from '@utils/types/action';
 
 const extractList = (response: any) => {
-
-
     const responseBody = response.data;
-
     if (Array.isArray(responseBody)) return responseBody;
-
     return responseBody?.result || responseBody?.data || [];
 };
-
 
 const normalizeEvent = (item: any): any => {
   if (!item) return {};
@@ -44,25 +38,31 @@ export const createTimeEvent = async (data: CreateTimeData): TypeOrError<TimeEve
 export const getPresentationStats = async (presentationId: string): TypeOrError<PresentationAnalytics> => {
   try {
     const encodedId = encodeURIComponent(presentationId);
-
     const [viewsResponse, timeResponse] = await Promise.all([
       api.get(`/kv/analytics_views/get-all?presentationId=${encodedId}&pagination=false`),
       api.get(`/kv/analytics_time/get-all?presentationId=${encodedId}&pagination=false`)
     ]);
 
-    const views: ViewEvent[] = extractList(viewsResponse).map(normalizeEvent);
-    const times: TimeEvent[] = extractList(timeResponse).map(normalizeEvent);
+    const rawViews = extractList(viewsResponse).filter((item: any) => {
+      const pId = item.data?.presentationId || item.presentationId;
+      return pId === presentationId;
+    });
+
+    const rawTimes = extractList(timeResponse).filter((item: any) => {
+      const pId = item.data?.presentationId || item.presentationId;
+      return pId === presentationId;
+    });
+
+    const views: ViewEvent[] = rawViews.map(normalizeEvent);
+    const times: TimeEvent[] = rawTimes.map(normalizeEvent);
 
     const totalViews = views.length;
-
     const totalTime = times.reduce((sum, event) => sum + (Number(event.timeSpent) || 0), 0);
-
     const avgTimeSpent = totalViews > 0 ? Math.round(totalTime / totalViews) : 0;
 
     const sortedViews = [...views].sort((a, b) =>
       new Date(b.viewedAt).getTime() - new Date(a.viewedAt).getTime()
     );
-
     const lastViewed = sortedViews[0]?.viewedAt;
 
     const historyMap = new Map<string, { views: number; totalTime: number; countTime: number }>();
@@ -87,7 +87,6 @@ export const getPresentationStats = async (presentationId: string): TypeOrError<
     });
 
     const history: DailyMetric[] = [];
-
     for(let i=13; i>=0; i--) {
       const d = new Date();
       d.setDate(d.getDate() - i);
@@ -95,7 +94,6 @@ export const getPresentationStats = async (presentationId: string): TypeOrError<
       const dateDisplay = `${d.getDate()}/${d.getMonth()+1}`;
 
       const data = historyMap.get(dateStr) || { views: 0, totalTime: 0, countTime: 0 };
-
       const avgTime = data.views > 0 ? Math.round(data.totalTime / data.views) : 0;
 
       history.push({
