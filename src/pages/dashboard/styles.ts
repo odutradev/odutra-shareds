@@ -54,7 +54,8 @@ export const GridContainer = styled(Box)(({ theme }) => ({
   gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))',
   gap: theme.spacing(2.5),
 }));
-export const ThemeButton = styled(IconButton)(({ theme }) => ({
+
+export const HeaderIconButton = styled(IconButton)(({ theme }) => ({
   border: `1px solid ${theme.palette.divider}`,
   borderRadius: '12px',
   padding: '10px',
@@ -67,6 +68,9 @@ export const ThemeButton = styled(IconButton)(({ theme }) => ({
     color: theme.palette.primary.main,
   },
 }));
+
+export const ThemeButton = HeaderIconButton;
+
 export const CreateButton = styled(Button)(({ theme }) => ({
   height: '44px',
   padding: '0 24px',

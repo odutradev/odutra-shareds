@@ -8,9 +8,10 @@ import {
   DialogContentText,
   DialogTitle,
   Button,
-  Box
+  Box,
+  Tooltip
 } from '@mui/material';
-import { Add, DarkMode, LightMode } from '@mui/icons-material';
+import { Add, DarkMode, LightMode, Settings } from '@mui/icons-material';
 import usePresentationsStore from '@stores/presentations';
 import { getAllPresentations, deletePresentation } from '@actions/presentations';
 import useAction from '@hooks/useAction';
@@ -24,7 +25,7 @@ import {
   ActionSection,
   EmptyState,
   GridContainer,
-  ThemeButton,
+  HeaderIconButton,
   CreateButton,
 } from './styles';
 import type { Presentation } from '@actions/presentations/types';
@@ -110,9 +111,17 @@ const Dashboard = () => {
           </TitleSection>
 
           <ActionSection>
-            <ThemeButton onClick={toggleTheme} aria-label="Alternar tema">
-              {theme === 'light' ? <DarkMode fontSize="small" /> : <LightMode fontSize="small" />}
-            </ThemeButton>
+            <Tooltip title="Configurações">
+              <HeaderIconButton onClick={() => navigate('/dashboard/settings')}>
+                <Settings fontSize="small" />
+              </HeaderIconButton>
+            </Tooltip>
+
+            <Tooltip title="Alternar tema">
+              <HeaderIconButton onClick={toggleTheme}>
+                {theme === 'light' ? <DarkMode fontSize="small" /> : <LightMode fontSize="small" />}
+              </HeaderIconButton>
+            </Tooltip>
 
             {presentations.length > 0 && (
               <CreateButton
