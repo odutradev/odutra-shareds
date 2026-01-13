@@ -97,11 +97,11 @@ const Home = () => {
                     {pin.map((digit, index) => (
                     <PinInput
                         key={index}
-                        ref={el => inputRefs.current[index] = el}
+                        ref={(el: HTMLInputElement | null) => { inputRefs.current[index] = el; }}
                         type={showPin ? 'text' : 'password'}
                         value={digit}
-                        onChange={(e) => handleChange(index, e.target.value)}
-                        onKeyDown={(e) => handleKeyDown(index, e)}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange(index, e.target.value)}
+                        onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => handleKeyDown(index, e)}
                         className={error ? 'error' : ''}
                         autoComplete="off"
                         inputMode="numeric"
