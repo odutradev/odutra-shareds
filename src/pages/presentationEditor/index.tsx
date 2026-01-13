@@ -35,7 +35,6 @@ import {
   Tooltip as RechartsTooltip,
   ResponsiveContainer
 } from 'recharts';
-
 import CodeEditor from '@components/codeEditor';
 import type { CreatePresentationData } from '@actions/presentations/types';
 import type { PresentationAnalytics } from '@actions/analytics/types';
@@ -43,7 +42,6 @@ import { checkIdAvailable, createPresentation, updatePresentation, getPresentati
 import { getPresentationStats } from '@actions/analytics';
 import useAction from '@hooks/useAction';
 import Loading from '@components/loading';
-
 import {
   EditorContainer,
   EditorPaper,
@@ -60,12 +58,10 @@ import {
   MetricValue,
   MetricLabel
 } from './styles';
-
 const PresentationEditor = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const editSlug = searchParams.get('slug');
-
   const [formData, setFormData] = useState<CreatePresentationData>({
     slug: '',
     title: '',
@@ -76,23 +72,19 @@ const PresentationEditor = () => {
     isRedirect: false,
     redirectUrl: ''
   });
-
   const [presentationId, setPresentationId] = useState<string | null>(null);
   const [slugError, setSlugError] = useState('');
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(!!editSlug);
   const [checkingSlug, setCheckingSlug] = useState(false);
   const [activeEditor, setActiveEditor] = useState<'html' | 'css' | 'js'>('html');
-
   const [stats, setStats] = useState<PresentationAnalytics | null>(null);
   const [loadingStats, setLoadingStats] = useState(false);
-
   useEffect(() => {
     if (editSlug) {
       loadPresentation(editSlug);
     }
   }, [editSlug]);
-
   const loadPresentation = async (slug: string) => {
     setInitialLoading(true);
     try {
@@ -109,7 +101,6 @@ const PresentationEditor = () => {
           redirectUrl: result.redirectUrl || ''
         });
         setPresentationId(result._id);
-
         loadStats(result.slug);
       } else {
         console.error("Apresentação não encontrada");
@@ -122,7 +113,6 @@ const PresentationEditor = () => {
       setInitialLoading(false);
     }
   };
-
   const loadStats = async (slug: string) => {
     setLoadingStats(true);
     try {
@@ -136,22 +126,17 @@ const PresentationEditor = () => {
       setLoadingStats(false);
     }
   };
-
   useEffect(() => {
     const currentSlug = formData.slug;
-
     if (!currentSlug || (editSlug && currentSlug === editSlug)) {
       setSlugError('');
       setCheckingSlug(false);
       return;
     }
-
     setSlugError('');
     setCheckingSlug(true);
-
     const timer = setTimeout(async () => {
       if (!currentSlug) return;
-
       try {
         const available = await checkIdAvailable(currentSlug);
         if (!available) {
@@ -166,39 +151,30 @@ const PresentationEditor = () => {
         setCheckingSlug(false);
       }
     }, 500);
-
     return () => clearTimeout(timer);
   }, [formData.slug, editSlug]);
-
   const handleSlugChange = (value: string) => {
     const normalized = value.toLowerCase().replace(/[^a-z0-9-]/g, '-');
     setFormData((prev) => ({ ...prev, slug: normalized }));
   };
-
   const generateRandomSlug = () => {
     const randomId = Math.random().toString(36).substring(2, 10);
     handleSlugChange(randomId);
   };
-
   const handleSubmit = async () => {
     if (!formData.title || !formData.slug) {
       return;
     }
-    
     if (!formData.isRedirect && !formData.html) {
         return;
     }
-    
     if (formData.isRedirect && !formData.redirectUrl) {
         return;
     }
-
     if (slugError || checkingSlug) {
       return;
     }
-
     setLoading(true);
-
     try {
       if (presentationId) {
         await useAction({
@@ -227,14 +203,12 @@ const PresentationEditor = () => {
       setLoading(false);
     }
   };
-
   const formatTime = (seconds: number) => {
     if (seconds < 60) return `${seconds}s`;
     if (seconds < 3600) return `${Math.round(seconds / 60)}m`;
     if (seconds < 86400) return `${(seconds / 3600).toFixed(1)}h`;
     return `${(seconds / 86400).toFixed(1)}d`;
   };
-
   const editorConfig = {
     html: {
       icon: <Code fontSize="small" />,
@@ -261,17 +235,13 @@ const PresentationEditor = () => {
       language: 'javascript' as const,
     },
   };
-
   const currentEditor = editorConfig[activeEditor];
-
   if (initialLoading) {
     return <Loading message="Carregando editor..." />;
   }
-
   const isSlugValid = formData.slug && !slugError && !checkingSlug;
   const isSlugInvalid = !!slugError;
   const isFormValid = formData.title && formData.slug && !slugError && !checkingSlug && !loading && (formData.isRedirect ? !!formData.redirectUrl : !!formData.html);
-
   return (
     <EditorContainer>
       <EditorPaper elevation={0}>
@@ -284,7 +254,6 @@ const PresentationEditor = () => {
               {presentationId ? 'Editar Apresentação' : 'Nova Apresentação'}
             </Typography>
           </Box>
-
           <Box sx={{ display: 'flex', gap: 2 }}>
             <Button
               onClick={() => navigate('/dashboard/projects')}
@@ -304,7 +273,6 @@ const PresentationEditor = () => {
             </Button>
           </Box>
         </Header>
-
         <ContentArea>
           <Stack spacing={3}>
             {presentationId && (
@@ -318,7 +286,6 @@ const PresentationEditor = () => {
                      <Refresh fontSize="small" sx={{ animation: loadingStats ? 'spin 1s linear infinite' : 'none', '@keyframes spin': { '0%': { transform: 'rotate(0deg)' }, '100%': { transform: 'rotate(360deg)' } } }} />
                   </IconButton>
                 </Box>
-
                 <DashboardGrid>
                   <MetricCard>
                     <Box className="icon-wrapper view">
@@ -329,7 +296,6 @@ const PresentationEditor = () => {
                       <MetricValue>{stats?.totalViews || 0}</MetricValue>
                     </Box>
                   </MetricCard>
-
                   <MetricCard>
                     <Box className="icon-wrapper time">
                       <AccessTime />
@@ -339,7 +305,6 @@ const PresentationEditor = () => {
                       <MetricValue>{formatTime(stats?.avgTimeSpent || 0)}</MetricValue>
                     </Box>
                   </MetricCard>
-
                   <MetricCard>
                     <Box className="icon-wrapper total">
                       <HourglassEmpty />
@@ -349,7 +314,6 @@ const PresentationEditor = () => {
                       <MetricValue>{formatTime(stats?.totalTimeSpent || 0)}</MetricValue>
                     </Box>
                   </MetricCard>
-
                   <ChartContainer>
                     <ResponsiveContainer width="100%" height="100%">
                       <AreaChart data={stats?.history || []}>
@@ -382,7 +346,6 @@ const PresentationEditor = () => {
                 </DashboardGrid>
               </Box>
             )}
-
             <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '2fr 1fr' }, gap: 3 }}>
               <TextField
                 label="Título"
@@ -393,7 +356,6 @@ const PresentationEditor = () => {
                 variant="outlined"
                 placeholder="Ex: Minha Apresentação Incrível"
               />
-
               <Box sx={{ display: 'flex', gap: 1, alignItems: 'flex-start' }}>
                 <TextField
                   label="Slug / URL"
@@ -403,7 +365,6 @@ const PresentationEditor = () => {
                   helperText={slugError || ''}
                   required
                   fullWidth
-                  disabled={!!presentationId}
                   variant="outlined"
                   placeholder="Ex: minha-apresentacao"
                   sx={{
@@ -441,33 +402,30 @@ const PresentationEditor = () => {
                     )
                   }}
                 />
-                {!presentationId && (
-                  <Tooltip title="Gerar ID aleatório">
-                    <IconButton
-                      onClick={generateRandomSlug}
-                      size="large"
-                      sx={{
-                        width: 56,
-                        height: 56,
-                        borderRadius: 1,
-                        border: '1px solid',
-                        borderColor: 'action.disabled',
-                        color: 'text.secondary',
-                        transition: 'all 0.2s ease',
-                        '&:hover': {
-                          borderColor: 'primary.main',
-                          color: 'primary.main',
-                          backgroundColor: 'action.hover',
-                        }
-                      }}
-                    >
-                      <Casino />
-                    </IconButton>
-                  </Tooltip>
-                )}
+                <Tooltip title="Gerar ID aleatório">
+                  <IconButton
+                    onClick={generateRandomSlug}
+                    size="large"
+                    sx={{
+                      width: 56,
+                      height: 56,
+                      borderRadius: 1,
+                      border: '1px solid',
+                      borderColor: 'action.disabled',
+                      color: 'text.secondary',
+                      transition: 'all 0.2s ease',
+                      '&:hover': {
+                        borderColor: 'primary.main',
+                        color: 'primary.main',
+                        backgroundColor: 'action.hover',
+                      }
+                    }}
+                  >
+                    <Casino />
+                  </IconButton>
+                </Tooltip>
               </Box>
             </Box>
-
             <StatusToggleContainer>
               <Box sx={{ flexGrow: 1 }}>
                 <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 0.5 }}>
@@ -497,7 +455,6 @@ const PresentationEditor = () => {
                 />
               </Box>
             </StatusToggleContainer>
-
             <Box sx={{ p: 3, border: '1px solid', borderColor: 'divider', borderRadius: '12px', bgcolor: 'background.paper', transition: 'all 0.2s' }}>
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: formData.isRedirect ? 3 : 0 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -516,7 +473,6 @@ const PresentationEditor = () => {
                   onChange={(e) => setFormData({ ...formData, isRedirect: e.target.checked })}
                 />
               </Box>
-
               {formData.isRedirect && (
                 <TextField
                   fullWidth
@@ -531,7 +487,6 @@ const PresentationEditor = () => {
                 />
               )}
             </Box>
-
             {!formData.isRedirect && (
               <Box>
                 <EditorToggle>
@@ -557,7 +512,6 @@ const PresentationEditor = () => {
                     JavaScript
                   </ToggleButton>
                 </EditorToggle>
-
                 <EditorLabel>
                   {currentEditor.icon}
                   <Box>
@@ -576,7 +530,6 @@ const PresentationEditor = () => {
                     />
                   )}
                 </EditorLabel>
-
                 <CodeEditor
                   value={currentEditor.value}
                   onChange={currentEditor.onChange}
@@ -591,5 +544,4 @@ const PresentationEditor = () => {
     </EditorContainer>
   );
 };
-
 export default PresentationEditor;

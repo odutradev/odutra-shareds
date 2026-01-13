@@ -11,7 +11,6 @@ export type Presentation = {
   createdAt: string;
   updatedAt: string;
 };
-
 export type CreatePresentationData = {
   slug: string;
   title: string;
@@ -22,8 +21,8 @@ export type CreatePresentationData = {
   isRedirect?: boolean;
   redirectUrl?: string;
 };
-
 export type UpdatePresentationData = {
+  slug?: string;
   title?: string;
   html?: string;
   css?: string;
@@ -32,7 +31,6 @@ export type UpdatePresentationData = {
   isRedirect?: boolean;
   redirectUrl?: string;
 };
-
 export type PresentationStats = {
   totalViews: number;
   avgTimeSpent: number;
