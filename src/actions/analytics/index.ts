@@ -115,3 +115,35 @@ export const getPresentationStats = async (presentationId: string): TypeOrError<
     return manageActionError(error);
   }
 };
+
+export const deletePresentationAnalytics = async (presentationId: string): Promise<void> => {
+  try {
+    const encodedId = encodeURIComponent(presentationId);
+
+    const [viewsResponse, timeResponse] = await Promise.all([
+      api.get(`/kv/analytics_views/get-all?presentationId=${encodedId}&pagination=false`),
+      api.get(`/kv/analytics_time/get-all?presentationId=${encodedId}&pagination=false`)
+    ]);
+
+    const views = extractList(viewsResponse).filter((item: any) => {
+        const pId = item.data?.presentationId || item.presentationId;
+        return pId === presentationId;
+    });
+
+    const times = extractList(timeResponse).filter((item: any) => {
+         const pId = item.data?.presentationId || item.presentationId;
+         return pId === presentationId;
+    });
+
+
+    const deletePromises = [
+        ...views.map((v: any) => api.delete(`/kv/analytics_views/delete/${v._id}`)),
+        ...times.map((t: any) => api.delete(`/kv/analytics_time/delete/${t._id}`))
+    ];
+
+    await Promise.all(deletePromises);
+  } catch (error) {
+    console.error("Erro ao limpar analytics da apresentação:", error);
+
+  }
+};

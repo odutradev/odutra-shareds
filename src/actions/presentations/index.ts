@@ -2,6 +2,8 @@ import { manageActionError } from '@utils/functions/action';
 import api from '@utils/functions/api';
 import type { Presentation, CreatePresentationData, UpdatePresentationData } from './types';
 import type { TypeOrError } from '@utils/types/action';
+import { deletePresentationAnalytics } from '../analytics';
+
 const mapResponseToPresentation = (item: any): Presentation => {
   if (!item) return item;
   const data = item.data || {};
@@ -21,16 +23,19 @@ const mapResponseToPresentation = (item: any): Presentation => {
     updatedAt: item.lastUpdate || item.updatedAt,
   };
 };
+
 const extractData = (response: any) => {
     if (response.data && response.data._id) {
         return response.data;
     }
     return response.data?.result || response.data?.data || response.data;
 };
+
 const extractList = (response: any) => {
     const list = response.data?.result || response.data?.data;
     return Array.isArray(list) ? list : [];
 };
+
 export const createPresentation = async (data: CreatePresentationData): TypeOrError<Presentation> => {
   try {
     const response = await api.post("/kv/presentations/create", {
@@ -50,6 +55,7 @@ export const createPresentation = async (data: CreatePresentationData): TypeOrEr
     return manageActionError(error);
   }
 };
+
 export const getAllPresentations = async (): TypeOrError<Presentation[]> => {
   try {
     const response = await api.get("/kv/presentations/get-all?pagination=false");
@@ -59,6 +65,7 @@ export const getAllPresentations = async (): TypeOrError<Presentation[]> => {
     return manageActionError(error);
   }
 };
+
 export const getPresentation = async (slug: string): TypeOrError<Presentation> => {
   try {
     let response = await api.get(`/kv/presentations/get-all?slug=${slug}&pagination=false`);
@@ -91,6 +98,7 @@ export const getPresentation = async (slug: string): TypeOrError<Presentation> =
     return manageActionError(error);
   }
 };
+
 export const updatePresentation = async (_id: string, data: UpdatePresentationData): TypeOrError<Presentation> => {
   try {
     const payload = { ...data };
@@ -107,14 +115,35 @@ export const updatePresentation = async (_id: string, data: UpdatePresentationDa
     return manageActionError(error);
   }
 };
+
 export const deletePresentation = async (_id: string): TypeOrError<void> => {
   try {
+
+
+    let slugToDelete: string | null = null;
+    try {
+      const responseCheck = await api.get(`/kv/presentations/get/${_id}`);
+      const data = extractData(responseCheck);
+      if (data) {
+
+        slugToDelete = data.data?.slug || data.data?.id || data.slug;
+      }
+    } catch (e) {
+      console.warn("Não foi possível recuperar o slug antes da deleção:", e);
+    }
+
     await api.delete(`/kv/presentations/delete/${_id}`);
+
+    if (slugToDelete) {
+      await deletePresentationAnalytics(slugToDelete);
+    }
+
     return;
   } catch (error) {
     return manageActionError(error);
   }
 };
+
 export const checkIdAvailable = async (slug: string): Promise<boolean> => {
   try {
     let response = await api.get(`/kv/presentations/get-all?slug=${slug}&pagination=false`);
