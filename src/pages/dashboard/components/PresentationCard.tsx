@@ -4,13 +4,11 @@ import { MoreVert, Edit, Delete, Visibility, Link as LinkIcon, OpenInNew } from 
 import { styled } from '@mui/material/styles';
 import type { Presentation, PresentationStats } from '@actions/presentations/types';
 import { getPresentationStats } from '@actions/analytics';
-
 interface PresentationCardProps {
   presentation: Presentation;
   onEdit: (presentation: Presentation) => void;
   onDelete: (presentation: Presentation) => void;
 }
-
 const StyledCard = styled(Card)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
@@ -29,85 +27,81 @@ const StyledCard = styled(Card)(({ theme }) => ({
       : '0 4px 20px rgba(0,0,0,0.08)',
   },
 }));
-
 const PresentationCard = ({ presentation, onEdit, onDelete }: PresentationCardProps) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [stats, setStats] = useState<PresentationStats>({ totalViews: 0, avgTimeSpent: 0 });
-
   useEffect(() => {
     let mounted = true;
-
     const loadStats = async () => {
       const result = await getPresentationStats(presentation.slug);
-
       if (mounted && result && 'totalViews' in result) {
         setStats(result);
       }
     };
-
     loadStats();
-
     return () => {
       mounted = false;
     };
   }, [presentation.slug]);
-
   const handleCardClick = () => {
     onEdit(presentation);
   };
-
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     event.stopPropagation();
     setAnchorEl(event.currentTarget);
   };
-
   const handleMenuClose = () => {
     setAnchorEl(null);
   };
-
   const handleEditOption = (event: React.MouseEvent<HTMLElement>) => {
     event.stopPropagation();
     onEdit(presentation);
     handleMenuClose();
   };
-
   const handleDeleteOption = (event: React.MouseEvent<HTMLElement>) => {
     event.stopPropagation();
     onDelete(presentation);
     handleMenuClose();
   };
-
   const copyLink = (event: React.MouseEvent<HTMLElement>) => {
     event.stopPropagation();
     const url = `${window.location.origin}/${presentation.slug}`;
     navigator.clipboard.writeText(url);
     handleMenuClose();
   };
-
   const openPresentation = (event: React.MouseEvent<HTMLElement>) => {
     event.stopPropagation();
     const url = `${window.location.origin}/${presentation.slug}`;
     window.open(url, '_blank');
   };
-
   return (
     <StyledCard onClick={handleCardClick}>
       <CardContent sx={{ p: '24px !important' }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 2 }}>
           <Box sx={{ minWidth: 0, flex: 1 }}>
-            <Typography
-              variant="h6"
-              sx={{
-                fontWeight: 600,
-                fontSize: '1rem',
-                lineHeight: 1.3,
-                mb: 1.5,
-                color: 'text.primary'
-              }}
-            >
-              {presentation.title}
-            </Typography>
-
+            <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1, mb: 1.5, flexWrap: 'wrap' }}>
+                <Typography
+                variant="h6"
+                sx={{
+                    fontWeight: 600,
+                    fontSize: '1rem',
+                    lineHeight: 1.3,
+                    color: 'text.primary'
+                }}
+                >
+                {presentation.title}
+                </Typography>
+                <Typography
+                    variant="caption"
+                    sx={{
+                        color: 'text.secondary',
+                        fontFamily: 'monospace',
+                        fontSize: '0.85rem'
+                    }}
+                >
+                    /{presentation.slug}
+                </Typography>
+            </Box>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
               <Chip
                 label={presentation.isActive ? 'Ativa' : 'Inativa'}
@@ -123,7 +117,6 @@ const PresentationCard = ({ presentation, onEdit, onDelete }: PresentationCardPr
                   borderColor: presentation.isActive ? 'success.main' : 'divider'
                 }}
               />
-
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: 'text.secondary' }}>
                 <Visibility sx={{ fontSize: 16 }} />
                 <Typography variant="caption" sx={{ fontWeight: 600, fontSize: '0.8rem' }}>
@@ -132,7 +125,6 @@ const PresentationCard = ({ presentation, onEdit, onDelete }: PresentationCardPr
               </Box>
             </Box>
           </Box>
-
           <Box sx={{ display: 'flex', gap: 0.5 }}>
             <Tooltip title="Abrir site">
               <IconButton
@@ -149,7 +141,6 @@ const PresentationCard = ({ presentation, onEdit, onDelete }: PresentationCardPr
                 <OpenInNew fontSize="small" />
               </IconButton>
             </Tooltip>
-
             <IconButton
               size="small"
               onClick={handleMenuOpen}
@@ -160,7 +151,6 @@ const PresentationCard = ({ presentation, onEdit, onDelete }: PresentationCardPr
           </Box>
         </Box>
       </CardContent>
-
       <Menu
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
@@ -193,5 +183,4 @@ const PresentationCard = ({ presentation, onEdit, onDelete }: PresentationCardPr
     </StyledCard>
   );
 };
-
 export default PresentationCard;

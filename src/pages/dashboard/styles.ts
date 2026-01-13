@@ -1,20 +1,17 @@
 import { Box, Container, Button, IconButton } from '@mui/material';
 import { styled } from '@mui/material/styles';
-
 export const DashboardContainer = styled(Box)(({ theme }) => ({
   minHeight: '100vh',
   backgroundColor: theme.palette.background.default,
   display: 'flex',
   flexDirection: 'column',
 }));
-
 export const ContentContainer = styled(Container)(({ theme }) => ({
   flexGrow: 1,
   paddingTop: theme.spacing(5),
   paddingBottom: theme.spacing(8),
   maxWidth: '1400px !important',
 }));
-
 export const Header = styled(Box)(({ theme }) => ({
   display: 'flex',
   justifyContent: 'space-between',
@@ -26,12 +23,10 @@ export const Header = styled(Box)(({ theme }) => ({
     gap: theme.spacing(3),
   },
 }));
-
 export const TitleSection = styled(Box)({
   display: 'flex',
   flexDirection: 'column',
 });
-
 export const ActionSection = styled(Box)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
@@ -41,7 +36,6 @@ export const ActionSection = styled(Box)(({ theme }) => ({
     justifyContent: 'space-between',
   },
 }));
-
 export const EmptyState = styled(Box)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
@@ -55,13 +49,11 @@ export const EmptyState = styled(Box)(({ theme }) => ({
   padding: theme.spacing(6),
   marginTop: theme.spacing(2),
 }));
-
 export const GridContainer = styled(Box)(({ theme }) => ({
   display: 'grid',
-  gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+  gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))',
   gap: theme.spacing(2.5),
 }));
-
 export const ThemeButton = styled(IconButton)(({ theme }) => ({
   border: `1px solid ${theme.palette.divider}`,
   borderRadius: '12px',
@@ -75,7 +67,6 @@ export const ThemeButton = styled(IconButton)(({ theme }) => ({
     color: theme.palette.primary.main,
   },
 }));
-
 export const CreateButton = styled(Button)(({ theme }) => ({
   height: '44px',
   padding: '0 24px',
