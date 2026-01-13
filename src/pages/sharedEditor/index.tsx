@@ -10,7 +10,8 @@ import {
   CircularProgress,
   IconButton,
   Tooltip,
-  Switch
+  Switch,
+  useTheme
 } from '@mui/material';
 import {
   ArrowBack,
@@ -63,6 +64,8 @@ const SharedEditor = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const editSlug = searchParams.get('slug');
+  const theme = useTheme();
+
   const [formData, setFormData] = useState<CreateSharedData>({
     slug: '',
     title: '',
@@ -73,6 +76,7 @@ const SharedEditor = () => {
     isRedirect: false,
     redirectUrl: ''
   });
+
   const [sharedId, setSharedId] = useState<string | null>(null);
   const [slugError, setSlugError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -138,8 +142,10 @@ const SharedEditor = () => {
       setCheckingSlug(false);
       return;
     }
+
     setSlugError('');
     setCheckingSlug(true);
+
     const timer = setTimeout(async () => {
       if (!currentSlug) return;
       try {
@@ -156,6 +162,7 @@ const SharedEditor = () => {
         setCheckingSlug(false);
       }
     }, 500);
+
     return () => clearTimeout(timer);
   }, [formData.slug, editSlug]);
 
@@ -174,14 +181,16 @@ const SharedEditor = () => {
       return;
     }
     if (!formData.isRedirect && !formData.html) {
-        return;
+      return;
     }
     if (formData.isRedirect && !formData.redirectUrl) {
-        return;
+      return;
     }
+
     if (slugError || checkingSlug) {
       return;
     }
+
     setLoading(true);
     try {
       if (sharedId) {
@@ -287,6 +296,7 @@ const SharedEditor = () => {
             </Button>
           </Box>
         </Header>
+
         <ContentArea>
           <Stack spacing={3}>
             {sharedId && (
@@ -297,11 +307,12 @@ const SharedEditor = () => {
                     Métricas (Últimos 14 dias)
                   </Typography>
                   <IconButton size="small" onClick={() => loadStats(formData.slug)} disabled={loadingStats}>
-                     <Refresh fontSize="small" sx={{ animation: loadingStats ? 'spin 1s linear infinite' : 'none', '@keyframes spin': { '0%': { transform: 'rotate(0deg)' }, '100%': { transform: 'rotate(360deg)' } } }} />
+                    <Refresh fontSize="small" sx={{ animation: loadingStats ? 'spin 1s linear infinite' : 'none', '@keyframes spin': { '0%': { transform: 'rotate(0deg)' }, '100%': { transform: 'rotate(360deg)' } } }} />
                   </IconButton>
                 </Box>
+
                 <DashboardGrid>
-                  <MetricCard>
+                  <MetricCard className="view">
                     <Box className="icon-wrapper view">
                       <Visibility />
                     </Box>
@@ -310,7 +321,7 @@ const SharedEditor = () => {
                       <MetricValue>{stats?.totalViews || 0}</MetricValue>
                     </Box>
                   </MetricCard>
-                  <MetricCard>
+                  <MetricCard className="time">
                     <Box className="icon-wrapper time">
                       <AccessTime />
                     </Box>
@@ -319,7 +330,7 @@ const SharedEditor = () => {
                       <MetricValue>{formatTime(stats?.avgTimeSpent || 0)}</MetricValue>
                     </Box>
                   </MetricCard>
-                  <MetricCard>
+                  <MetricCard className="total">
                     <Box className="icon-wrapper total">
                       <HourglassEmpty />
                     </Box>
@@ -328,13 +339,14 @@ const SharedEditor = () => {
                       <MetricValue>{formatTime(stats?.totalTimeSpent || 0)}</MetricValue>
                     </Box>
                   </MetricCard>
+
                   <ChartContainer>
                     <ResponsiveContainer width="100%" height="100%">
                       <AreaChart data={stats?.history || []}>
                         <defs>
                           <linearGradient id="colorViews" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="#8884d8" stopOpacity={0.8}/>
-                            <stop offset="95%" stopColor="#8884d8" stopOpacity={0}/>
+                            <stop offset="5%" stopColor={theme.palette.primary.main} stopOpacity={0.8} />
+                            <stop offset="95%" stopColor={theme.palette.primary.main} stopOpacity={0} />
                           </linearGradient>
                         </defs>
                         <XAxis
@@ -345,11 +357,13 @@ const SharedEditor = () => {
                         />
                         <RechartsTooltip
                           contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+                          formatter={(value: any) => [value, 'Visualizações']}
+                          labelFormatter={(label) => `Data: ${label}`}
                         />
                         <Area
                           type="monotone"
                           dataKey="views"
-                          stroke="#8884d8"
+                          stroke={theme.palette.primary.main}
                           fillOpacity={1}
                           fill="url(#colorViews)"
                           strokeWidth={2}
@@ -360,6 +374,7 @@ const SharedEditor = () => {
                 </DashboardGrid>
               </Box>
             )}
+
             <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '2fr 1fr' }, gap: 3 }}>
               <TextField
                 label="Título"
@@ -370,6 +385,7 @@ const SharedEditor = () => {
                 variant="outlined"
                 placeholder="Ex: Minha Página Incrível"
               />
+
               <Box sx={{ display: 'flex', gap: 1, alignItems: 'flex-start' }}>
                 <TextField
                   label="Slug / URL"
@@ -397,7 +413,7 @@ const SharedEditor = () => {
                   InputProps={{
                     endAdornment: (
                       <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                         {checkingSlug && (
+                        {checkingSlug && (
                           <Tooltip title="Verificando disponibilidade...">
                             <CircularProgress size={20} />
                           </Tooltip>
@@ -408,9 +424,9 @@ const SharedEditor = () => {
                           </Tooltip>
                         )}
                         {!checkingSlug && isSlugValid && (
-                           <Tooltip title="Disponível">
+                          <Tooltip title="Disponível">
                             <CheckCircle color="success" />
-                           </Tooltip>
+                          </Tooltip>
                         )}
                       </Box>
                     )
@@ -440,6 +456,7 @@ const SharedEditor = () => {
                 </Tooltip>
               </Box>
             </Box>
+
             <StatusToggleContainer>
               <Box sx={{ flexGrow: 1 }}>
                 <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 0.5 }}>
@@ -469,11 +486,12 @@ const SharedEditor = () => {
                 />
               </Box>
             </StatusToggleContainer>
+
             <Box sx={{ p: 3, border: '1px solid', borderColor: 'divider', borderRadius: '12px', bgcolor: 'background.paper', transition: 'all 0.2s' }}>
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: formData.isRedirect ? 3 : 0 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                   <Box sx={{ p: 1, borderRadius: '8px', bgcolor: formData.isRedirect ? 'primary.lighter' : 'action.hover', color: formData.isRedirect ? 'primary.main' : 'text.secondary' }}>
-                      <LinkIcon />
+                    <LinkIcon />
                   </Box>
                   <Box>
                     <Typography variant="subtitle1" fontWeight={600}>Modo Redirecionador</Typography>
@@ -487,6 +505,7 @@ const SharedEditor = () => {
                   onChange={(e) => setFormData({ ...formData, isRedirect: e.target.checked })}
                 />
               </Box>
+
               {formData.isRedirect && (
                 <TextField
                   fullWidth
@@ -501,6 +520,7 @@ const SharedEditor = () => {
                 />
               )}
             </Box>
+
             {!formData.isRedirect && (
               <Box>
                 <EditorToggle>
@@ -526,6 +546,7 @@ const SharedEditor = () => {
                     JavaScript
                   </ToggleButton>
                 </EditorToggle>
+
                 <EditorLabel>
                   {currentEditor.icon}
                   <Box>
@@ -544,6 +565,7 @@ const SharedEditor = () => {
                     />
                   )}
                 </EditorLabel>
+
                 <CodeEditor
                   value={currentEditor.value}
                   onChange={currentEditor.onChange}
@@ -558,4 +580,5 @@ const SharedEditor = () => {
     </EditorContainer>
   );
 };
+
 export default SharedEditor;
