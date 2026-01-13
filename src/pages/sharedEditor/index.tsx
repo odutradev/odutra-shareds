@@ -36,10 +36,10 @@ import {
   ResponsiveContainer
 } from 'recharts';
 import CodeEditor from '@components/codeEditor';
-import type { CreatePresentationData } from '@actions/presentations/types';
-import type { PresentationAnalytics } from '@actions/analytics/types';
-import { checkIdAvailable, createPresentation, updatePresentation, getPresentation } from '@actions/presentations';
-import { getPresentationStats } from '@actions/analytics';
+import type { CreateSharedData } from '@actions/shareds/types';
+import type { SharedAnalytics } from '@actions/analytics/types';
+import { checkIdAvailable, createShared, updateShared, getShared } from '@actions/shareds';
+import { getSharedStats } from '@actions/analytics';
 import useAction from '@hooks/useAction';
 import Loading from '@components/loading';
 import {
@@ -58,11 +58,12 @@ import {
   MetricValue,
   MetricLabel
 } from './styles';
-const PresentationEditor = () => {
+
+const SharedEditor = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const editSlug = searchParams.get('slug');
-  const [formData, setFormData] = useState<CreatePresentationData>({
+  const [formData, setFormData] = useState<CreateSharedData>({
     slug: '',
     title: '',
     html: '',
@@ -72,23 +73,25 @@ const PresentationEditor = () => {
     isRedirect: false,
     redirectUrl: ''
   });
-  const [presentationId, setPresentationId] = useState<string | null>(null);
+  const [sharedId, setSharedId] = useState<string | null>(null);
   const [slugError, setSlugError] = useState('');
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(!!editSlug);
   const [checkingSlug, setCheckingSlug] = useState(false);
   const [activeEditor, setActiveEditor] = useState<'html' | 'css' | 'js'>('html');
-  const [stats, setStats] = useState<PresentationAnalytics | null>(null);
+  const [stats, setStats] = useState<SharedAnalytics | null>(null);
   const [loadingStats, setLoadingStats] = useState(false);
+
   useEffect(() => {
     if (editSlug) {
-      loadPresentation(editSlug);
+      loadShared(editSlug);
     }
   }, [editSlug]);
-  const loadPresentation = async (slug: string) => {
+
+  const loadShared = async (slug: string) => {
     setInitialLoading(true);
     try {
-      const result = await getPresentation(slug);
+      const result = await getShared(slug);
       if (result && !('error' in result)) {
         setFormData({
           slug: result.slug,
@@ -100,23 +103,24 @@ const PresentationEditor = () => {
           isRedirect: result.isRedirect || false,
           redirectUrl: result.redirectUrl || ''
         });
-        setPresentationId(result._id);
+        setSharedId(result._id);
         loadStats(result.slug);
       } else {
-        console.error("Apresentação não encontrada");
+        console.error("Compartilhamento não encontrado");
         navigate('/dashboard/projects');
       }
     } catch (error) {
-      console.error('Erro ao carregar apresentação', error);
+      console.error('Erro ao carregar compartilhamento', error);
       navigate('/dashboard/projects');
     } finally {
       setInitialLoading(false);
     }
   };
+
   const loadStats = async (slug: string) => {
     setLoadingStats(true);
     try {
-      const result = await getPresentationStats(slug);
+      const result = await getSharedStats(slug);
       if (result && !('error' in result)) {
         setStats(result);
       }
@@ -126,6 +130,7 @@ const PresentationEditor = () => {
       setLoadingStats(false);
     }
   };
+
   useEffect(() => {
     const currentSlug = formData.slug;
     if (!currentSlug || (editSlug && currentSlug === editSlug)) {
@@ -153,14 +158,17 @@ const PresentationEditor = () => {
     }, 500);
     return () => clearTimeout(timer);
   }, [formData.slug, editSlug]);
+
   const handleSlugChange = (value: string) => {
     const normalized = value.toLowerCase().replace(/[^a-z0-9-]/g, '-');
     setFormData((prev) => ({ ...prev, slug: normalized }));
   };
+
   const generateRandomSlug = () => {
     const randomId = Math.random().toString(36).substring(2, 10);
     handleSlugChange(randomId);
   };
+
   const handleSubmit = async () => {
     if (!formData.title || !formData.slug) {
       return;
@@ -176,23 +184,23 @@ const PresentationEditor = () => {
     }
     setLoading(true);
     try {
-      if (presentationId) {
+      if (sharedId) {
         await useAction({
-          action: () => updatePresentation(presentationId, formData),
+          action: () => updateShared(sharedId, formData),
           callback: () => navigate('/dashboard/projects'),
           toastMessages: {
             pending: 'Salvando alterações...',
-            success: 'Apresentação atualizada!',
-            error: 'Erro ao atualizar apresentação',
+            success: 'Compartilhamento atualizado!',
+            error: 'Erro ao atualizar compartilhamento',
           },
         });
       } else {
         await useAction({
-          action: () => createPresentation(formData),
+          action: () => createShared(formData),
           callback: () => navigate('/dashboard/projects'),
           toastMessages: {
-            pending: 'Criando apresentação...',
-            success: 'Apresentação criada com sucesso!',
+            pending: 'Criando compartilhamento...',
+            success: 'Compartilhamento criado com sucesso!',
             error: 'Erro ao criar. Tente outro Slug.',
           },
         });
@@ -203,17 +211,19 @@ const PresentationEditor = () => {
       setLoading(false);
     }
   };
+
   const formatTime = (seconds: number) => {
     if (seconds < 60) return `${seconds}s`;
     if (seconds < 3600) return `${Math.round(seconds / 60)}m`;
     if (seconds < 86400) return `${(seconds / 3600).toFixed(1)}h`;
     return `${(seconds / 86400).toFixed(1)}d`;
   };
+
   const editorConfig = {
     html: {
       icon: <Code fontSize="small" />,
       label: 'HTML',
-      description: 'Estrutura da apresentação',
+      description: 'Estrutura do conteúdo',
       value: formData.html,
       onChange: (value: string) => setFormData({ ...formData, html: value }),
       language: 'html' as const,
@@ -235,13 +245,17 @@ const PresentationEditor = () => {
       language: 'javascript' as const,
     },
   };
+
   const currentEditor = editorConfig[activeEditor];
+
   if (initialLoading) {
     return <Loading message="Carregando editor..." />;
   }
+
   const isSlugValid = formData.slug && !slugError && !checkingSlug;
   const isSlugInvalid = !!slugError;
   const isFormValid = formData.title && formData.slug && !slugError && !checkingSlug && !loading && (formData.isRedirect ? !!formData.redirectUrl : !!formData.html);
+
   return (
     <EditorContainer>
       <EditorPaper elevation={0}>
@@ -251,7 +265,7 @@ const PresentationEditor = () => {
               <ArrowBack />
             </IconButton>
             <Typography variant="h6" sx={{ fontWeight: 600 }}>
-              {presentationId ? 'Editar Apresentação' : 'Nova Apresentação'}
+              {sharedId ? 'Editar Compartilhamento' : 'Novo Compartilhamento'}
             </Typography>
           </Box>
           <Box sx={{ display: 'flex', gap: 2 }}>
@@ -275,7 +289,7 @@ const PresentationEditor = () => {
         </Header>
         <ContentArea>
           <Stack spacing={3}>
-            {presentationId && (
+            {sharedId && (
               <Box>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
                   <Timeline color="primary" />
@@ -354,7 +368,7 @@ const PresentationEditor = () => {
                 required
                 fullWidth
                 variant="outlined"
-                placeholder="Ex: Minha Apresentação Incrível"
+                placeholder="Ex: Minha Página Incrível"
               />
               <Box sx={{ display: 'flex', gap: 1, alignItems: 'flex-start' }}>
                 <TextField
@@ -366,7 +380,7 @@ const PresentationEditor = () => {
                   required
                   fullWidth
                   variant="outlined"
-                  placeholder="Ex: minha-apresentacao"
+                  placeholder="Ex: minha-pagina"
                   sx={{
                     '& .MuiOutlinedInput-root': {
                       '& fieldset': {
@@ -429,12 +443,12 @@ const PresentationEditor = () => {
             <StatusToggleContainer>
               <Box sx={{ flexGrow: 1 }}>
                 <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 0.5 }}>
-                  Visibilidade da Apresentação
+                  Visibilidade
                 </Typography>
                 <Typography variant="caption" color="text.secondary">
                   {formData.isActive
-                    ? `Pública em: ${window.location.origin}/${formData.slug || '...'}`
-                    : 'Apresentação oculta (404 para visitantes)'}
+                    ? `Público em: ${window.location.origin}/${formData.slug || '...'}`
+                    : 'Oculto (404 para visitantes)'}
                 </Typography>
               </Box>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -447,7 +461,7 @@ const PresentationEditor = () => {
                     textAlign: 'right',
                   }}
                 >
-                  {formData.isActive ? 'Ativa' : 'Inativa'}
+                  {formData.isActive ? 'Ativo' : 'Inativo'}
                 </Typography>
                 <StatusSwitch
                   checked={formData.isActive}
@@ -464,7 +478,7 @@ const PresentationEditor = () => {
                   <Box>
                     <Typography variant="subtitle1" fontWeight={600}>Modo Redirecionador</Typography>
                     <Typography variant="body2" color="text.secondary">
-                      Ao invés de exibir slides, redireciona o visitante para outra URL.
+                      Ao invés de exibir conteúdo, redireciona o visitante para outra URL.
                     </Typography>
                   </Box>
                 </Box>
@@ -544,4 +558,4 @@ const PresentationEditor = () => {
     </EditorContainer>
   );
 };
-export default PresentationEditor;
+export default SharedEditor;

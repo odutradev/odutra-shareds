@@ -12,11 +12,11 @@ import {
   Tooltip
 } from '@mui/material';
 import { Add, DarkMode, LightMode, Settings } from '@mui/icons-material';
-import usePresentationsStore from '@stores/presentations';
-import { getAllPresentations, deletePresentation } from '@actions/presentations';
+import useSharedsStore from '@stores/shareds';
+import { getAllShareds, deleteShared } from '@actions/shareds';
 import useAction from '@hooks/useAction';
 import Loading from '@components/loading';
-import PresentationCard from './components/PresentationCard';
+import SharedCard from './components/SharedCard';
 import {
   DashboardContainer,
   ContentContainer,
@@ -28,30 +28,30 @@ import {
   HeaderIconButton,
   CreateButton,
 } from './styles';
-import type { Presentation } from '@actions/presentations/types';
+import type { Shared } from '@actions/shareds/types';
 
 const Dashboard = () => {
   const {
-    presentations: { presentations, loading },
-    setPresentations,
-    removePresentation,
+    shareds: { data, loading },
+    setShareds,
+    removeShared,
     setLoading,
-  } = usePresentationsStore();
+  } = useSharedsStore();
 
   const navigate = useNavigate();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [presentationToDelete, setPresentationToDelete] = useState<Presentation | null>(null);
+  const [sharedToDelete, setSharedToDelete] = useState<Shared | null>(null);
   const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'dark');
 
   useEffect(() => {
-    loadPresentations();
+    loadShareds();
   }, []);
 
-  const loadPresentations = async () => {
+  const loadShareds = async () => {
     setLoading(true);
-    const result = await getAllPresentations();
+    const result = await getAllShareds();
     if (result && Array.isArray(result)) {
-      setPresentations(result);
+      setShareds(result);
     }
     setLoading(false);
   };
@@ -60,30 +60,30 @@ const Dashboard = () => {
     navigate('/dashboard/edit');
   };
 
-  const handleEdit = (presentation: Presentation) => {
-    navigate(`/dashboard/edit?slug=${presentation.slug}`);
+  const handleEdit = (shared: Shared) => {
+    navigate(`/dashboard/edit?slug=${shared.slug}`);
   };
 
-  const handleDeleteClick = (presentation: Presentation) => {
-    setPresentationToDelete(presentation);
+  const handleDeleteClick = (shared: Shared) => {
+    setSharedToDelete(shared);
     setDeleteDialogOpen(true);
   };
 
   const handleDeleteConfirm = async () => {
-    if (!presentationToDelete) return;
+    if (!sharedToDelete) return;
 
     await useAction({
-      action: () => deletePresentation(presentationToDelete._id),
-      callback: () => removePresentation(presentationToDelete._id),
+      action: () => deleteShared(sharedToDelete._id),
+      callback: () => removeShared(sharedToDelete._id),
       toastMessages: {
-        pending: 'Deletando apresentação...',
-        success: 'Apresentação deletada!',
-        error: 'Erro ao deletar apresentação',
+        pending: 'Deletando compartilhamento...',
+        success: 'Compartilhamento deletado!',
+        error: 'Erro ao deletar compartilhamento',
       },
     });
 
     setDeleteDialogOpen(false);
-    setPresentationToDelete(null);
+    setSharedToDelete(null);
   };
 
   const toggleTheme = () => {
@@ -94,7 +94,7 @@ const Dashboard = () => {
   };
 
   if (loading) {
-    return <Loading message="Carregando apresentações" />;
+    return <Loading message="Carregando compartilhamentos" />;
   }
 
   return (
@@ -103,10 +103,10 @@ const Dashboard = () => {
         <Header>
           <TitleSection>
             <Typography variant="h4" sx={{ fontWeight: 700, letterSpacing: '-0.5px' }}>
-              Minhas Apresentações
+              Meus Compartilhamentos
             </Typography>
             <Typography variant="body1" color="text.secondary" sx={{ mt: 0.5 }}>
-              Gerencie seus slides e acompanhe estatísticas
+              Gerencie seus links, páginas e conteúdos compartilhados
             </Typography>
           </TitleSection>
 
@@ -123,25 +123,25 @@ const Dashboard = () => {
               </HeaderIconButton>
             </Tooltip>
 
-            {presentations.length > 0 && (
+            {data.length > 0 && (
               <CreateButton
                 variant="contained"
                 startIcon={<Add />}
                 onClick={handleCreate}
               >
-                Nova Apresentação
+                Novo Compartilhamento
               </CreateButton>
             )}
           </ActionSection>
         </Header>
 
-        {presentations.length === 0 ? (
+        {data.length === 0 ? (
           <EmptyState>
             <Typography variant="h5" sx={{ fontWeight: 600, mb: 1 }}>
-              Nenhuma apresentação encontrada
+              Nenhum compartilhamento encontrado
             </Typography>
             <Typography variant="body1" color="text.secondary" sx={{ mb: 4, maxWidth: 400 }}>
-              Crie sua primeira apresentação para começar a compartilhar suas ideias com o mundo.
+              Crie seu primeiro link ou página para começar a compartilhar suas ideias com o mundo.
             </Typography>
             <CreateButton
               variant="contained"
@@ -149,17 +149,17 @@ const Dashboard = () => {
               startIcon={<Add />}
               onClick={handleCreate}
             >
-              Criar Apresentação
+              Criar Compartilhamento
             </CreateButton>
           </EmptyState>
         ) : (
           <GridContainer>
-            {presentations.map((presentation) => {
-              if (!presentation || !presentation._id) return null;
+            {data.map((shared) => {
+              if (!shared || !shared._id) return null;
               return (
-                <PresentationCard
-                  key={presentation._id}
-                  presentation={presentation}
+                <SharedCard
+                  key={shared._id}
+                  shared={shared}
                   onEdit={handleEdit}
                   onDelete={handleDeleteClick}
                 />
@@ -176,10 +176,10 @@ const Dashboard = () => {
           sx: { borderRadius: '16px', padding: 1 }
         }}
       >
-        <DialogTitle sx={{ fontWeight: 600 }}>Excluir apresentação?</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 600 }}>Excluir compartilhamento?</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Você está prestes a excluir "<strong>{presentationToDelete?.title}</strong>".
+            Você está prestes a excluir "<strong>{sharedToDelete?.title}</strong>".
             Esta ação é irreversível e todos os dados de estatísticas serão perdidos.
           </DialogContentText>
         </DialogContent>

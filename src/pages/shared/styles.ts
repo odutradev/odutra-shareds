@@ -1,7 +1,7 @@
 import { Box } from '@mui/material';
 import { styled } from '@mui/material/styles';
 
-export const PresentationContainer = styled(Box)({
+export const SharedContainer = styled(Box)({
   height: '100vh',
   display: 'flex',
   flexDirection: 'column',

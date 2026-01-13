@@ -1,10 +1,10 @@
 import { manageActionError } from '@utils/functions/action';
 import api from '@utils/functions/api';
-import type { Presentation, CreatePresentationData, UpdatePresentationData } from './types';
+import type { Shared, CreateSharedData, UpdateSharedData } from './types';
 import type { TypeOrError } from '@utils/types/action';
-import { deletePresentationAnalytics } from '../analytics';
+import { deleteSharedAnalytics } from '../analytics';
 
-const mapResponseToPresentation = (item: any): Presentation => {
+const mapResponseToShared = (item: any): Shared => {
   if (!item) return item;
   const data = item.data || {};
   let isActive = data.isActive ?? item.isActive ?? true;
@@ -36,9 +36,9 @@ const extractList = (response: any) => {
     return Array.isArray(list) ? list : [];
 };
 
-export const createPresentation = async (data: CreatePresentationData): TypeOrError<Presentation> => {
+export const createShared = async (data: CreateSharedData): TypeOrError<Shared> => {
   try {
-    const response = await api.post("/kv/presentations/create", {
+    const response = await api.post("/kv/shareds/create", {
       data: {
         ...data,
         id: data.slug
@@ -47,95 +47,92 @@ export const createPresentation = async (data: CreatePresentationData): TypeOrEr
     const rawData = extractData(response);
     if (!rawData || !rawData._id) {
       console.error("Resposta inválida do servidor:", response.data);
-      throw new Error("Falha ao criar apresentação: O servidor não retornou um ID válido.");
+      throw new Error("Falha ao criar compartilhamento: O servidor não retornou um ID válido.");
     }
-    return mapResponseToPresentation(rawData);
+    return mapResponseToShared(rawData);
   } catch (error) {
-    console.error("Erro ao criar apresentação:", error);
+    console.error("Erro ao criar compartilhamento:", error);
     return manageActionError(error);
   }
 };
 
-export const getAllPresentations = async (): TypeOrError<Presentation[]> => {
+export const getAllShareds = async (): TypeOrError<Shared[]> => {
   try {
-    const response = await api.get("/kv/presentations/get-all?pagination=false");
+    const response = await api.get("/kv/shareds/get-all?pagination=false");
     const list = extractList(response);
-    return list.map(mapResponseToPresentation);
+    return list.map(mapResponseToShared);
   } catch (error) {
     return manageActionError(error);
   }
 };
 
-export const getPresentation = async (slug: string): TypeOrError<Presentation> => {
+export const getShared = async (slug: string): TypeOrError<Shared> => {
   try {
-    let response = await api.get(`/kv/presentations/get-all?slug=${slug}&pagination=false`);
+    let response = await api.get(`/kv/shareds/get-all?slug=${slug}&pagination=false`);
     let list = extractList(response);
     let exactMatch = list.find((item: any) => {
          const itemSlug = item.data?.slug || item.slug;
          return itemSlug === slug;
     });
     if (exactMatch) {
-        return mapResponseToPresentation(exactMatch);
+        return mapResponseToShared(exactMatch);
     }
-    response = await api.get(`/kv/presentations/get-all?id=${slug}&pagination=false`);
+    response = await api.get(`/kv/shareds/get-all?id=${slug}&pagination=false`);
     list = extractList(response);
     exactMatch = list.find((item: any) => {
          const itemId = item.data?.id || item.id;
          return itemId === slug;
     });
     if (exactMatch) {
-         return mapResponseToPresentation(exactMatch);
+         return mapResponseToShared(exactMatch);
     }
     try {
-         const directResponse = await api.get(`/kv/presentations/get/${slug}`);
+         const directResponse = await api.get(`/kv/shareds/get/${slug}`);
          const directData = extractData(directResponse);
          if (directData && directData._id) {
-             return mapResponseToPresentation(directData);
+             return mapResponseToShared(directData);
          }
     } catch (e) {}
-    return { error: 'Apresentação não encontrada' };
+    return { error: 'Compartilhamento não encontrado' };
   } catch (error) {
     return manageActionError(error);
   }
 };
 
-export const updatePresentation = async (_id: string, data: UpdatePresentationData): TypeOrError<Presentation> => {
+export const updateShared = async (_id: string, data: UpdateSharedData): TypeOrError<Shared> => {
   try {
     const payload = { ...data };
     if (payload.slug) {
         (payload as any).id = payload.slug;
     }
-    const response = await api.patch(`/kv/presentations/update/${_id}`, { data: payload });
+    const response = await api.patch(`/kv/shareds/update/${_id}`, { data: payload });
     const rawData = extractData(response);
     if (!rawData || !rawData._id) {
         throw new Error("Falha ao atualizar: Resposta inválida da API");
     }
-    return mapResponseToPresentation(rawData);
+    return mapResponseToShared(rawData);
   } catch (error) {
     return manageActionError(error);
   }
 };
 
-export const deletePresentation = async (_id: string): TypeOrError<void> => {
+export const deleteShared = async (_id: string): TypeOrError<void> => {
   try {
-
-
     let slugToDelete: string | null = null;
     try {
-      const responseCheck = await api.get(`/kv/presentations/get/${_id}`);
+      const responseCheck = await api.get(`/kv/shareds/get/${_id}`);
       const data = extractData(responseCheck);
       if (data) {
-
         slugToDelete = data.data?.slug || data.data?.id || data.slug;
       }
     } catch (e) {
       console.warn("Não foi possível recuperar o slug antes da deleção:", e);
     }
 
-    await api.delete(`/kv/presentations/delete/${_id}`);
+    await api.delete(`/kv/shareds/delete/${_id}`);
 
     if (slugToDelete) {
-      await deletePresentationAnalytics(slugToDelete);
+      await deleteSharedAnalytics(slugToDelete);
     }
 
     return;
@@ -146,14 +143,14 @@ export const deletePresentation = async (_id: string): TypeOrError<void> => {
 
 export const checkIdAvailable = async (slug: string): Promise<boolean> => {
   try {
-    let response = await api.get(`/kv/presentations/get-all?slug=${slug}&pagination=false`);
+    let response = await api.get(`/kv/shareds/get-all?slug=${slug}&pagination=false`);
     let list = extractList(response);
     const exactSlugMatch = list.some((item: any) => {
         const itemSlug = item.data?.slug || item.slug;
         return itemSlug === slug;
     });
     if (exactSlugMatch) return false;
-    response = await api.get(`/kv/presentations/get-all?id=${slug}&pagination=false`);
+    response = await api.get(`/kv/shareds/get-all?id=${slug}&pagination=false`);
     list = extractList(response);
     const exactIdMatch = list.some((item: any) => {
         const itemId = item.data?.id || item.id;

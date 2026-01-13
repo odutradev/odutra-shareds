@@ -1,4 +1,4 @@
-export type Presentation = {
+export type Shared = {
   _id: string;
   slug: string;
   title: string;
@@ -11,7 +11,8 @@ export type Presentation = {
   createdAt: string;
   updatedAt: string;
 };
-export type CreatePresentationData = {
+
+export type CreateSharedData = {
   slug: string;
   title: string;
   html: string;
@@ -21,7 +22,8 @@ export type CreatePresentationData = {
   isRedirect?: boolean;
   redirectUrl?: string;
 };
-export type UpdatePresentationData = {
+
+export type UpdateSharedData = {
   slug?: string;
   title?: string;
   html?: string;
@@ -31,7 +33,8 @@ export type UpdatePresentationData = {
   isRedirect?: boolean;
   redirectUrl?: string;
 };
-export type PresentationStats = {
+
+export type SharedStats = {
   totalViews: number;
   avgTimeSpent: number;
   lastViewed?: string;

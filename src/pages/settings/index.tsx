@@ -87,7 +87,7 @@ const Settings = () => {
 
     openConfirmDialog(
         'Restaurar Backup',
-        'Isso irá adicionar os dados do arquivo ao seu sistema atual. Dados duplicados (como slugs de apresentações já existentes) podem gerar erros ou serem ignorados. Deseja continuar?',
+        'Isso irá adicionar os dados do arquivo ao seu sistema atual. Dados duplicados podem gerar erros. Deseja continuar?',
         async () => {
              await restoreBackup(file);
              loadMetrics();
@@ -123,7 +123,7 @@ const Settings = () => {
   const handleDeleteViews = () => {
     openConfirmDialog(
         'Limpar Histórico de Views',
-        'Tem certeza que deseja apagar todos os registros de visualizações? Isso zerará as contagens de views.',
+        'Tem certeza que deseja apagar todos os registros de visualizações?',
         async () => {
             await clearCollection('analytics_views');
             loadMetrics();
@@ -134,7 +134,7 @@ const Settings = () => {
   const handleDeleteTime = () => {
     openConfirmDialog(
         'Limpar Registros de Tempo',
-        'Tem certeza que deseja apagar todos os registros de tempo? As estatísticas de tempo médio serão perdidas.',
+        'Tem certeza que deseja apagar todos os registros de tempo?',
         async () => {
             await clearCollection('analytics_time');
             loadMetrics();
@@ -145,7 +145,7 @@ const Settings = () => {
   const handleDeleteProject = () => {
     openConfirmDialog(
         'DELETAR PROJETO INTEIRO',
-        'ATENÇÃO: Isso apagará TODAS as apresentações e TODOS os dados de analytics. Esta ação não pode ser desfeita. O sistema será resetado.',
+        'ATENÇÃO: Isso apagará TODOS os compartilhamentos e TODOS os dados de analytics. O sistema será resetado.',
         async () => {
             await deleteProject();
             navigate('/');
@@ -171,12 +171,12 @@ const Settings = () => {
           <MetricCard>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, color: 'primary.main' }}>
               <Slideshow />
-              <Typography variant="subtitle2" fontWeight={600}>Apresentações</Typography>
+              <Typography variant="subtitle2" fontWeight={600}>Compartilhamentos</Typography>
             </Box>
             <Typography variant="h3" fontWeight={700}>
               {loading ? <CircularProgress size={20} /> : metrics?.presentationsCount || 0}
             </Typography>
-            <Typography variant="caption" color="text.secondary">Cadastradas no sistema</Typography>
+            <Typography variant="caption" color="text.secondary">Cadastrados no sistema</Typography>
           </MetricCard>
 
           <MetricCard>
@@ -208,7 +208,7 @@ const Settings = () => {
             <Box>
               <Typography variant="subtitle1" fontWeight={600}>Backup dos Dados</Typography>
               <Typography variant="body2" color="text.secondary">
-                Baixe um arquivo JSON contendo todas as apresentações e métricas.
+                Baixe um arquivo JSON contendo todos os compartilhamentos e métricas.
               </Typography>
             </Box>
             <Button variant="outlined" startIcon={<Backup />} onClick={handleBackup}>
@@ -220,7 +220,7 @@ const Settings = () => {
             <Box>
               <Typography variant="subtitle1" fontWeight={600}>Restaurar Backup</Typography>
               <Typography variant="body2" color="text.secondary">
-                Importe um arquivo JSON para restaurar apresentações e métricas antigas.
+                Importe um arquivo JSON para restaurar dados antigos.
               </Typography>
             </Box>
             <Box>
@@ -241,7 +241,7 @@ const Settings = () => {
             <Box>
               <Typography variant="subtitle1" fontWeight={600}>Limpar Visualizações</Typography>
               <Typography variant="body2" color="text.secondary">
-                Remove todo o histórico de quem acessou suas apresentações.
+                Remove todo o histórico de quem acessou seus links.
               </Typography>
             </Box>
             <Button color="warning" onClick={handleDeleteViews}>
@@ -253,7 +253,7 @@ const Settings = () => {
             <Box>
               <Typography variant="subtitle1" fontWeight={600}>Limpar Métricas de Tempo</Typography>
               <Typography variant="body2" color="text.secondary">
-                Remove os dados de tempo de permanência nos slides.
+                Remove os dados de tempo de permanência.
               </Typography>
             </Box>
             <Button color="warning" onClick={handleDeleteTime}>

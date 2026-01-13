@@ -1,6 +1,6 @@
 export type ViewEvent = {
   _id: string;
-  presentationId: string;
+  sharedId: string;
   viewedAt: string;
   userAgent?: string;
   referrer?: string;
@@ -8,20 +8,20 @@ export type ViewEvent = {
 
 export type TimeEvent = {
   _id: string;
-  presentationId: string;
+  sharedId: string;
   recordedAt: string;
   timeSpent: number;
 };
 
 export type CreateViewData = {
-  presentationId: string;
+  sharedId: string;
   viewedAt: string;
   userAgent?: string;
   referrer?: string;
 };
 
 export type CreateTimeData = {
-  presentationId: string;
+  sharedId: string;
   recordedAt: string;
   timeSpent: number;
 };
@@ -33,7 +33,7 @@ export type DailyMetric = {
   avgTime: number;
 };
 
-export type PresentationAnalytics = {
+export type SharedAnalytics = {
   totalViews: number;
   avgTimeSpent: number;
   totalTimeSpent: number;

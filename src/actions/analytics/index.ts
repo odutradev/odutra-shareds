@@ -1,6 +1,6 @@
 import { manageActionError } from '@utils/functions/action';
 import api from '@utils/functions/api';
-import type { ViewEvent, TimeEvent, CreateViewData, CreateTimeData, PresentationAnalytics, DailyMetric } from './types';
+import type { ViewEvent, TimeEvent, CreateViewData, CreateTimeData, SharedAnalytics, DailyMetric } from './types';
 import type { TypeOrError } from '@utils/types/action';
 
 const extractList = (response: any) => {
@@ -35,22 +35,22 @@ export const createTimeEvent = async (data: CreateTimeData): TypeOrError<TimeEve
   }
 };
 
-export const getPresentationStats = async (presentationId: string): TypeOrError<PresentationAnalytics> => {
+export const getSharedStats = async (sharedId: string): TypeOrError<SharedAnalytics> => {
   try {
-    const encodedId = encodeURIComponent(presentationId);
+    const encodedId = encodeURIComponent(sharedId);
     const [viewsResponse, timeResponse] = await Promise.all([
-      api.get(`/kv/analytics_views/get-all?presentationId=${encodedId}&pagination=false`),
-      api.get(`/kv/analytics_time/get-all?presentationId=${encodedId}&pagination=false`)
+      api.get(`/kv/analytics_views/get-all?sharedId=${encodedId}&pagination=false`),
+      api.get(`/kv/analytics_time/get-all?sharedId=${encodedId}&pagination=false`)
     ]);
 
     const rawViews = extractList(viewsResponse).filter((item: any) => {
-      const pId = item.data?.presentationId || item.presentationId;
-      return pId === presentationId;
+      const sId = item.data?.sharedId || item.sharedId;
+      return sId === sharedId;
     });
 
     const rawTimes = extractList(timeResponse).filter((item: any) => {
-      const pId = item.data?.presentationId || item.presentationId;
-      return pId === presentationId;
+      const sId = item.data?.sharedId || item.sharedId;
+      return sId === sharedId;
     });
 
     const views: ViewEvent[] = rawViews.map(normalizeEvent);
@@ -116,25 +116,24 @@ export const getPresentationStats = async (presentationId: string): TypeOrError<
   }
 };
 
-export const deletePresentationAnalytics = async (presentationId: string): Promise<void> => {
+export const deleteSharedAnalytics = async (sharedId: string): Promise<void> => {
   try {
-    const encodedId = encodeURIComponent(presentationId);
+    const encodedId = encodeURIComponent(sharedId);
 
     const [viewsResponse, timeResponse] = await Promise.all([
-      api.get(`/kv/analytics_views/get-all?presentationId=${encodedId}&pagination=false`),
-      api.get(`/kv/analytics_time/get-all?presentationId=${encodedId}&pagination=false`)
+      api.get(`/kv/analytics_views/get-all?sharedId=${encodedId}&pagination=false`),
+      api.get(`/kv/analytics_time/get-all?sharedId=${encodedId}&pagination=false`)
     ]);
 
     const views = extractList(viewsResponse).filter((item: any) => {
-        const pId = item.data?.presentationId || item.presentationId;
-        return pId === presentationId;
+        const sId = item.data?.sharedId || item.sharedId;
+        return sId === sharedId;
     });
 
     const times = extractList(timeResponse).filter((item: any) => {
-         const pId = item.data?.presentationId || item.presentationId;
-         return pId === presentationId;
+         const sId = item.data?.sharedId || item.sharedId;
+         return sId === sharedId;
     });
-
 
     const deletePromises = [
         ...views.map((v: any) => api.delete(`/kv/analytics_views/delete/${v._id}`)),
@@ -143,7 +142,6 @@ export const deletePresentationAnalytics = async (presentationId: string): Promi
 
     await Promise.all(deletePromises);
   } catch (error) {
-    console.error("Erro ao limpar analytics da apresentação:", error);
-
+    console.error("Erro ao limpar analytics do compartilhamento:", error);
   }
 };

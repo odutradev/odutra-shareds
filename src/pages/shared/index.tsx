@@ -2,19 +2,19 @@ import { useEffect, useState, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { Typography, Box, CircularProgress } from '@mui/material';
 import { ErrorOutline, Link as LinkIcon } from '@mui/icons-material';
-import { getPresentation } from '@actions/presentations';
+import { getShared } from '@actions/shareds';
 import { createViewEvent, createTimeEvent } from '@actions/analytics';
 import Loading from '@components/loading';
 import {
-  PresentationContainer,
+  SharedContainer,
   ContentFrame,
   ErrorContainer,
 } from './styles';
-import type { Presentation } from '@actions/presentations/types';
+import type { Shared } from '@actions/shareds/types';
 
-const PresentationPage = () => {
+const SharedPage = () => {
   const { id: slug } = useParams<{ id: string }>();
-  const [presentation, setPresentation] = useState<Presentation | null>(null);
+  const [shared, setShared] = useState<Shared | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -32,29 +32,29 @@ const PresentationPage = () => {
     const load = async () => {
       setLoading(true);
       setError(null);
-      setPresentation(null);
+      setShared(null);
 
-      const result = await getPresentation(slug);
+      const result = await getShared(slug);
 
       if (!result) {
-        setError('Erro ao carregar apresentação');
+        setError('Erro ao carregar compartilhamento');
         setLoading(false);
         return;
       }
 
       if ('error' in result) {
-        setError('Apresentação não encontrada');
+        setError('Compartilhamento não encontrado');
         setLoading(false);
         return;
       }
 
       if (!result.isActive) {
-        setError('Esta apresentação está inativa');
+        setError('Este conteúdo está inativo');
         setLoading(false);
         return;
       }
 
-      setPresentation(result);
+      setShared(result);
       setLoading(false);
     };
 
@@ -62,21 +62,21 @@ const PresentationPage = () => {
   }, [slug]);
 
   useEffect(() => {
-    if (!presentation) return;
+    if (!shared) return;
 
-    const currentSlug = presentation.slug;
+    const currentSlug = shared.slug;
 
     if (viewRecordedSlugRef.current !== currentSlug) {
       const viewPromise = createViewEvent({
-        presentationId: currentSlug,
+        sharedId: currentSlug,
         viewedAt: new Date().toISOString(),
         userAgent: navigator.userAgent,
         referrer: document.referrer,
       });
-      
-      if (presentation.isRedirect && presentation.redirectUrl) {
+
+      if (shared.isRedirect && shared.redirectUrl) {
           const performRedirect = () => {
-             let targetUrl = presentation.redirectUrl!;
+             let targetUrl = shared.redirectUrl!;
              if (!targetUrl.match(/^https?:\/\//)) {
                  targetUrl = 'https://' + targetUrl;
              }
@@ -87,7 +87,7 @@ const PresentationPage = () => {
             .finally(() => {
                setTimeout(performRedirect, 100);
             });
-            
+
           setTimeout(performRedirect, 2000);
       } else {
           viewPromise.catch(console.error);
@@ -96,7 +96,7 @@ const PresentationPage = () => {
       viewRecordedSlugRef.current = currentSlug;
     }
 
-    if (presentation.isRedirect) return;
+    if (shared.isRedirect) return;
 
     lastSentTimeRef.current = Date.now();
 
@@ -104,7 +104,7 @@ const PresentationPage = () => {
       if (timeSpent <= 0) return;
 
       createTimeEvent({
-        presentationId: currentSlug,
+        sharedId: currentSlug,
         recordedAt: new Date().toISOString(),
         timeSpent,
       }).catch(console.error);
@@ -136,10 +136,10 @@ const PresentationPage = () => {
       window.removeEventListener('beforeunload', handleExit);
       handleExit();
     };
-  }, [presentation]);
+  }, [shared]);
 
   useEffect(() => {
-    if (!presentation || !iframeRef.current || presentation.isRedirect) return;
+    if (!shared || !iframeRef.current || shared.isRedirect) return;
 
     const doc = iframeRef.current.contentDocument;
     if (!doc) return;
@@ -150,12 +150,12 @@ const PresentationPage = () => {
         <head>
           <meta charset="UTF-8">
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <title>${presentation.title}</title>
-          ${presentation.css ? `<style>${presentation.css}</style>` : ''}
+          <title>${shared.title}</title>
+          ${shared.css ? `<style>${shared.css}</style>` : ''}
         </head>
         <body>
-          ${presentation.html}
-          ${presentation.js ? `<script>${presentation.js}</script>` : ''}
+          ${shared.html}
+          ${shared.js ? `<script>${shared.js}</script>` : ''}
         </body>
       </html>
     `;
@@ -163,26 +163,26 @@ const PresentationPage = () => {
     doc.open();
     doc.write(htmlContent);
     doc.close();
-  }, [presentation]);
+  }, [shared]);
 
   if (loading) {
-    return <Loading message="Carregando apresentação" />;
+    return <Loading message="Carregando conteúdo" />;
   }
 
-  if (error || !presentation) {
+  if (error || !shared) {
     return (
       <ErrorContainer>
         <ErrorOutline sx={{ fontSize: 80, mb: 2, color: 'error.main' }} />
         <Typography variant="h4" gutterBottom>
-          {error || 'Apresentação não encontrada'}
+          {error || 'Conteúdo não encontrado'}
         </Typography>
       </ErrorContainer>
     );
   }
 
-  if (presentation.isRedirect && presentation.redirectUrl) {
+  if (shared.isRedirect && shared.redirectUrl) {
       return (
-        <PresentationContainer sx={{ alignItems: 'center', justifyContent: 'center' }}>
+        <SharedContainer sx={{ alignItems: 'center', justifyContent: 'center' }}>
             <Box sx={{ textAlign: 'center', p: 4, maxWidth: 500 }}>
                 <CircularProgress size={40} sx={{ mb: 3 }} />
                 <Typography variant="h5" fontWeight={600} gutterBottom>
@@ -191,30 +191,30 @@ const PresentationPage = () => {
                 <Typography color="text.secondary" sx={{ mb: 2 }}>
                     Você está sendo redirecionado para:
                 </Typography>
-                <Box sx={{ 
-                    display: 'flex', 
-                    alignItems: 'center', 
+                <Box sx={{
+                    display: 'flex',
+                    alignItems: 'center',
                     justifyContent: 'center',
-                    gap: 1, 
-                    p: 2, 
-                    bgcolor: 'action.hover', 
+                    gap: 1,
+                    p: 2,
+                    bgcolor: 'action.hover',
                     borderRadius: 2,
                     typography: 'body2',
                     fontFamily: 'monospace'
                 }}>
                     <LinkIcon fontSize="small" />
-                    {presentation.redirectUrl}
+                    {shared.redirectUrl}
                 </Box>
             </Box>
-        </PresentationContainer>
+        </SharedContainer>
       );
   }
 
   return (
-    <PresentationContainer>
-      <ContentFrame ref={iframeRef} title={presentation.title} />
-    </PresentationContainer>
+    <SharedContainer>
+      <ContentFrame ref={iframeRef} title={shared.title} />
+    </SharedContainer>
   );
 };
 
-export default PresentationPage;
+export default SharedPage;

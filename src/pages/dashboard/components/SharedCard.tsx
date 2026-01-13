@@ -2,13 +2,15 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, Typography, Box, Chip, IconButton, Menu, MenuItem, Tooltip } from '@mui/material';
 import { MoreVert, Edit, Delete, Visibility, Link as LinkIcon, OpenInNew } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
-import type { Presentation, PresentationStats } from '@actions/presentations/types';
-import { getPresentationStats } from '@actions/analytics';
-interface PresentationCardProps {
-  presentation: Presentation;
-  onEdit: (presentation: Presentation) => void;
-  onDelete: (presentation: Presentation) => void;
+import type { Shared, SharedStats } from '@actions/shareds/types';
+import { getSharedStats } from '@actions/analytics';
+
+interface SharedCardProps {
+  shared: Shared;
+  onEdit: (shared: Shared) => void;
+  onDelete: (shared: Shared) => void;
 }
+
 const StyledCard = styled(Card)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
@@ -27,13 +29,15 @@ const StyledCard = styled(Card)(({ theme }) => ({
       : '0 4px 20px rgba(0,0,0,0.08)',
   },
 }));
-const PresentationCard = ({ presentation, onEdit, onDelete }: PresentationCardProps) => {
+
+const SharedCard = ({ shared, onEdit, onDelete }: SharedCardProps) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [stats, setStats] = useState<PresentationStats>({ totalViews: 0, avgTimeSpent: 0 });
+  const [stats, setStats] = useState<SharedStats>({ totalViews: 0, avgTimeSpent: 0 });
+
   useEffect(() => {
     let mounted = true;
     const loadStats = async () => {
-      const result = await getPresentationStats(presentation.slug);
+      const result = await getSharedStats(shared.slug);
       if (mounted && result && 'totalViews' in result) {
         setStats(result);
       }
@@ -42,38 +46,46 @@ const PresentationCard = ({ presentation, onEdit, onDelete }: PresentationCardPr
     return () => {
       mounted = false;
     };
-  }, [presentation.slug]);
+  }, [shared.slug]);
+
   const handleCardClick = () => {
-    onEdit(presentation);
+    onEdit(shared);
   };
+
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     event.stopPropagation();
     setAnchorEl(event.currentTarget);
   };
+
   const handleMenuClose = () => {
     setAnchorEl(null);
   };
+
   const handleEditOption = (event: React.MouseEvent<HTMLElement>) => {
     event.stopPropagation();
-    onEdit(presentation);
+    onEdit(shared);
     handleMenuClose();
   };
+
   const handleDeleteOption = (event: React.MouseEvent<HTMLElement>) => {
     event.stopPropagation();
-    onDelete(presentation);
+    onDelete(shared);
     handleMenuClose();
   };
+
   const copyLink = (event: React.MouseEvent<HTMLElement>) => {
     event.stopPropagation();
-    const url = `${window.location.origin}/${presentation.slug}`;
+    const url = `${window.location.origin}/${shared.slug}`;
     navigator.clipboard.writeText(url);
     handleMenuClose();
   };
-  const openPresentation = (event: React.MouseEvent<HTMLElement>) => {
+
+  const openShared = (event: React.MouseEvent<HTMLElement>) => {
     event.stopPropagation();
-    const url = `${window.location.origin}/${presentation.slug}`;
+    const url = `${window.location.origin}/${shared.slug}`;
     window.open(url, '_blank');
   };
+
   return (
     <StyledCard onClick={handleCardClick}>
       <CardContent sx={{ p: '24px !important' }}>
@@ -89,7 +101,7 @@ const PresentationCard = ({ presentation, onEdit, onDelete }: PresentationCardPr
                     color: 'text.primary'
                 }}
                 >
-                {presentation.title}
+                {shared.title}
                 </Typography>
                 <Typography
                     variant="caption"
@@ -99,14 +111,14 @@ const PresentationCard = ({ presentation, onEdit, onDelete }: PresentationCardPr
                         fontSize: '0.85rem'
                     }}
                 >
-                    /{presentation.slug}
+                    /{shared.slug}
                 </Typography>
             </Box>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
               <Chip
-                label={presentation.isActive ? 'Ativa' : 'Inativa'}
+                label={shared.isActive ? 'Ativo' : 'Inativo'}
                 size="small"
-                color={presentation.isActive ? 'success' : 'default'}
+                color={shared.isActive ? 'success' : 'default'}
                 variant="outlined"
                 sx={{
                   height: 22,
@@ -114,7 +126,7 @@ const PresentationCard = ({ presentation, onEdit, onDelete }: PresentationCardPr
                   fontWeight: 600,
                   borderRadius: '6px',
                   border: '1px solid',
-                  borderColor: presentation.isActive ? 'success.main' : 'divider'
+                  borderColor: shared.isActive ? 'success.main' : 'divider'
                 }}
               />
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: 'text.secondary' }}>
@@ -126,10 +138,10 @@ const PresentationCard = ({ presentation, onEdit, onDelete }: PresentationCardPr
             </Box>
           </Box>
           <Box sx={{ display: 'flex', gap: 0.5 }}>
-            <Tooltip title="Abrir site">
+            <Tooltip title="Abrir link">
               <IconButton
                 size="small"
-                onClick={openPresentation}
+                onClick={openShared}
                 sx={{
                   color: 'text.secondary',
                   '&:hover': {
@@ -183,4 +195,5 @@ const PresentationCard = ({ presentation, onEdit, onDelete }: PresentationCardPr
     </StyledCard>
   );
 };
-export default PresentationCard;
+
+export default SharedCard;

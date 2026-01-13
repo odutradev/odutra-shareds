@@ -1,7 +1,7 @@
 import NotFound from "@pages/notFound";
 import Dashboard from "@pages/dashboard";
-import PresentationEditor from "@pages/presentationEditor";
-import PresentationPage from "@pages/presentation";
+import SharedEditor from "@pages/sharedEditor";
+import SharedPage from "@pages/shared";
 import Settings from "@pages/settings";
 import Home from "@pages/home";
 
@@ -12,9 +12,9 @@ const routes = [
         routes: [
             ['/', <Home />],
             ['/dashboard/projects', <Dashboard />],
-            ['/dashboard/edit', <PresentationEditor />],
+            ['/dashboard/edit', <SharedEditor />],
             ['/dashboard/settings', <Settings />],
-            ['/:id', <PresentationPage />],
+            ['/:id', <SharedPage />],
             ['/not-found', <NotFound />],
         ]
     }
