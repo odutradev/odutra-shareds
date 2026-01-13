@@ -63,21 +63,30 @@ export const getPresentation = async (slug: string): TypeOrError<Presentation> =
   try {
     let response = await api.get(`/kv/presentations/get-all?slug=${slug}&pagination=false`);
     let list = extractList(response);
-    if (list.length === 0) {
-        response = await api.get(`/kv/presentations/get-all?id=${slug}&pagination=false`);
-        list = extractList(response);
+    let exactMatch = list.find((item: any) => {
+         const itemSlug = item.data?.slug || item.slug;
+         return itemSlug === slug;
+    });
+    if (exactMatch) {
+        return mapResponseToPresentation(exactMatch);
     }
-    if (list.length === 0) {
-      try {
+    response = await api.get(`/kv/presentations/get-all?id=${slug}&pagination=false`);
+    list = extractList(response);
+    exactMatch = list.find((item: any) => {
+         const itemId = item.data?.id || item.id;
+         return itemId === slug;
+    });
+    if (exactMatch) {
+         return mapResponseToPresentation(exactMatch);
+    }
+    try {
          const directResponse = await api.get(`/kv/presentations/get/${slug}`);
          const directData = extractData(directResponse);
          if (directData && directData._id) {
              return mapResponseToPresentation(directData);
          }
-      } catch (e) {}
-      return { error: 'Apresentação não encontrada' };
-    }
-    return mapResponseToPresentation(list[0]);
+    } catch (e) {}
+    return { error: 'Apresentação não encontrada' };
   } catch (error) {
     return manageActionError(error);
   }
@@ -110,10 +119,18 @@ export const checkIdAvailable = async (slug: string): Promise<boolean> => {
   try {
     let response = await api.get(`/kv/presentations/get-all?slug=${slug}&pagination=false`);
     let list = extractList(response);
-    if (list.length > 0) return false;
+    const exactSlugMatch = list.some((item: any) => {
+        const itemSlug = item.data?.slug || item.slug;
+        return itemSlug === slug;
+    });
+    if (exactSlugMatch) return false;
     response = await api.get(`/kv/presentations/get-all?id=${slug}&pagination=false`);
     list = extractList(response);
-    return list.length === 0;
+    const exactIdMatch = list.some((item: any) => {
+        const itemId = item.data?.id || item.id;
+        return itemId === slug;
+    });
+    return !exactIdMatch;
   } catch (error: any) {
     if (error.response?.status === 404) {
         return true;
