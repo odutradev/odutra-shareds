@@ -11,4 +11,5 @@ export interface SharedCacheData {
 
 export interface SharedCacheState extends SharedCacheData {
   setShared: (slug: string, shared: Shared) => void;
+  cleanExpired: () => void;
 }
