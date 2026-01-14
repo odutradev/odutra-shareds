@@ -22,8 +22,7 @@ const SharedCard = ({ shared, onEdit, onDelete }: SharedCardProps) => {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleEdit = (e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handleEdit = () => {
     onEdit(shared);
   };
 
@@ -33,7 +32,7 @@ const SharedCard = ({ shared, onEdit, onDelete }: SharedCardProps) => {
   };
 
   return (
-    <StyledCard onClick={() => onEdit(shared)}>
+    <StyledCard onClick={handleEdit}>
       <CardContent>
         <Typography variant="h6" gutterBottom noWrap sx={{ fontWeight: 600 }}>
           {shared.title || 'Sem título'}
@@ -59,7 +58,7 @@ const SharedCard = ({ shared, onEdit, onDelete }: SharedCardProps) => {
         </Tooltip>
 
         <Tooltip title="Editar">
-          <ActionButton size="small" onClick={handleEdit}>
+          <ActionButton size="small" onClick={(e: any) => { e.stopPropagation(); onEdit(shared); }}>
             <Edit fontSize="small" />
           </ActionButton>
         </Tooltip>

@@ -7,6 +7,10 @@ export const StyledCard = styled(Card)(({ theme }) => ({
   transition: 'transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease',
   border: `1px solid ${theme.palette.divider}`,
   cursor: 'pointer',
+  height: '100%',
+  display: 'flex',
+  flexDirection: 'column',
+  justifyContent: 'space-between',
   '&:hover': {
     transform: 'translateY(-4px)',
     boxShadow: '0px 12px 24px rgba(0, 0, 0, 0.1)',
@@ -42,7 +46,8 @@ export const DeleteButton = styled(IconButton)(({ theme }) => ({
 }));
 
 export const SlugLink = styled(Typography)(({ theme }) => ({
-  display: 'flex',
+  display: 'inline-flex',
+  width: 'fit-content',
   alignItems: 'center',
   gap: theme.spacing(0.5),
   textDecoration: 'none',
