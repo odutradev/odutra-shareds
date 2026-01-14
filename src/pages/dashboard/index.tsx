@@ -1,49 +1,26 @@
-import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import {
-  Typography,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
-  Button,
-  Box,
-  Tooltip
-} from '@mui/material';
-import { Add, DarkMode, LightMode, Settings } from '@mui/icons-material';
-import useSharedsStore from '@stores/shareds';
-import useSystemStore from '@stores/system';
 import { getAllShareds, deleteShared } from '@actions/shareds';
-import useAction from '@hooks/useAction';
+import { DashboardContainer, ContentContainer } from './styles';
+import { useNavigate } from 'react-router-dom';
+import useSharedsStore from '@stores/shareds';
+import { useEffect, useState } from 'react';
+import useSystemStore from '@stores/system';
 import Loading from '@components/loading';
-import SharedCard from './subcomponents/sharedCard';
-import {
-  DashboardContainer,
-  ContentContainer,
-  Header,
-  TitleSection,
-  ActionSection,
-  EmptyState,
-  GridContainer,
-  HeaderIconButton,
-  CreateButton,
-} from './styles';
+import useAction from '@hooks/useAction';
+
+import DeleteConfirmationDialog from './subcomponents/deleteDialog';
+import DashboardEmptyState from './subcomponents/emptyState';
+import DashboardHeader from './subcomponents/header';
+import DashboardGrid from './subcomponents/grid';
+
 import type { Shared } from '@actions/shareds/types';
 
 const Dashboard = () => {
-  const {
-    shareds: { data, loading },
-    setShareds,
-    removeShared,
-    setLoading,
-  } = useSharedsStore();
-
+  const { shareds: { data, loading }, setShareds, removeShared, setLoading } = useSharedsStore();
   const { system: { theme }, toggleTheme } = useSystemStore();
-
   const navigate = useNavigate();
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+
   const [sharedToDelete, setSharedToDelete] = useState<Shared | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   useEffect(() => {
     loadShareds();
@@ -64,6 +41,10 @@ const Dashboard = () => {
 
   const handleEdit = (shared: Shared) => {
     navigate(`/dashboard/edit?slug=${shared.slug}`);
+  };
+
+  const handleSettings = () => {
+    navigate('/dashboard/settings');
   };
 
   const handleDeleteClick = (shared: Shared) => {
@@ -95,107 +76,31 @@ const Dashboard = () => {
   return (
     <DashboardContainer>
       <ContentContainer>
-        <Header>
-          <TitleSection>
-            <Typography variant="h4" sx={{ fontWeight: 700, letterSpacing: '-0.5px' }}>
-              Meus Compartilhamentos
-            </Typography>
-            <Typography variant="body1" color="text.secondary" sx={{ mt: 0.5 }}>
-              Gerencie seus links, páginas e conteúdos compartilhados
-            </Typography>
-          </TitleSection>
-
-          <ActionSection>
-            <Tooltip title="Configurações">
-              <HeaderIconButton onClick={() => navigate('/dashboard/settings')}>
-                <Settings fontSize="small" />
-              </HeaderIconButton>
-            </Tooltip>
-
-            <Tooltip title="Alternar tema">
-              <HeaderIconButton onClick={toggleTheme}>
-                {theme === 'light' ? <DarkMode fontSize="small" /> : <LightMode fontSize="small" />}
-              </HeaderIconButton>
-            </Tooltip>
-
-            {data.length > 0 && (
-              <CreateButton
-                variant="contained"
-                startIcon={<Add />}
-                onClick={handleCreate}
-              >
-                Novo Compartilhamento
-              </CreateButton>
-            )}
-          </ActionSection>
-        </Header>
+        <DashboardHeader
+          theme={theme}
+          showCreateButton={data.length > 0}
+          onToggleTheme={toggleTheme}
+          onSettings={handleSettings}
+          onCreate={handleCreate}
+        />
 
         {data.length === 0 ? (
-          <EmptyState>
-            <Typography variant="h5" sx={{ fontWeight: 600, mb: 1 }}>
-              Nenhum compartilhamento encontrado
-            </Typography>
-            <Typography variant="body1" color="text.secondary" sx={{ mb: 4, maxWidth: 400 }}>
-              Crie seu primeiro link ou página para começar a compartilhar suas ideias com o mundo.
-            </Typography>
-            <CreateButton
-              variant="contained"
-              size="large"
-              startIcon={<Add />}
-              onClick={handleCreate}
-            >
-              Criar Compartilhamento
-            </CreateButton>
-          </EmptyState>
+          <DashboardEmptyState onCreate={handleCreate} />
         ) : (
-          <GridContainer>
-            {data.map((shared) => {
-              if (!shared || !shared._id) return null;
-              return (
-                <SharedCard
-                  key={shared._id}
-                  shared={shared}
-                  onEdit={handleEdit}
-                  onDelete={handleDeleteClick}
-                />
-              );
-            })}
-          </GridContainer>
+          <DashboardGrid 
+            data={data} 
+            onEdit={handleEdit} 
+            onDelete={handleDeleteClick} 
+          />
         )}
       </ContentContainer>
 
-      <Dialog
+      <DeleteConfirmationDialog 
         open={deleteDialogOpen}
+        itemName={sharedToDelete?.title}
         onClose={() => setDeleteDialogOpen(false)}
-        PaperProps={{
-          sx: { borderRadius: '16px', padding: 1 }
-        }}
-      >
-        <DialogTitle sx={{ fontWeight: 600 }}>Excluir compartilhamento?</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            Você está prestes a excluir "<strong>{sharedToDelete?.title}</strong>".
-            Esta ação é irreversível e todos os dados de estatísticas serão perdidos.
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button
-            onClick={() => setDeleteDialogOpen(false)}
-            sx={{ borderRadius: '8px', color: 'text.secondary' }}
-          >
-            Cancelar
-          </Button>
-          <Button
-            onClick={handleDeleteConfirm}
-            color="error"
-            variant="contained"
-            disableElevation
-            sx={{ borderRadius: '8px' }}
-          >
-            Excluir
-          </Button>
-        </DialogActions>
-      </Dialog>
+        onConfirm={handleDeleteConfirm}
+      />
     </DashboardContainer>
   );
 };
