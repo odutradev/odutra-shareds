@@ -1,24 +1,27 @@
-import Loading from '@components/loading';
+import { useEffect } from 'react';
 
+import { useSharedAnalytics } from './hooks/useSharedAnalytics';
+import RedirectState from './components/RedirectState';
+import { useSharedData } from './hooks/useSharedData';
 import ContentFrame from './components/ContentFrame';
 import ErrorState from './components/ErrorState';
-import RedirectState from './components/RedirectState';
-import { useSharedAnalytics } from './hooks/useSharedAnalytics';
-import { useSharedData } from './hooks/useSharedData';
 import { SharedContainer } from './styles';
+import Loading from '@components/loading';
 
 const SharedPage = () => {
   const { shared, loading, error } = useSharedData();
-  
+
   useSharedAnalytics(shared);
 
-  if (loading) {
-    return <Loading message="Carregando conteúdo" />;
-  }
+  useEffect(() => {
+    if (shared?.title) {
+      document.title = shared.title;
+    }
+  }, [shared]);
 
-  if (error || !shared) {
-    return <ErrorState message={error || 'Conteúdo não encontrado'} />;
-  }
+  if (loading) return <Loading message="Carregando conteúdo" />;
+
+  if (error || !shared) return <ErrorState message={error || 'Conteúdo não encontrado'} />;
 
   if (shared.isRedirect && shared.redirectUrl) {
     return (
