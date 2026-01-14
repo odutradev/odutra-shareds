@@ -2,17 +2,9 @@ import { AccessTime, Dashboard, Timer, Visibility } from '@mui/icons-material';
 import { CardContent, Skeleton, Box } from '@mui/material';
 
 import { MetricsContainer, MetricCard, IconWrapper, MetricValue, MetricLabel } from './styles';
+import formatTime from '@utils/functions/formatTime';
 
 import type { SettingsMetricsProps } from './types';
-
-const formatTime = (seconds: number): string => {
-  if (seconds < 60) return `${seconds}s`;
-  const hours = Math.floor(seconds / 3600);
-  const minutes = Math.floor((seconds % 3600) / 60);
-
-  if (hours > 0) return `${hours}h ${minutes}m`;
-  return `${minutes}m`;
-};
 
 const SettingsMetrics = ({ metrics, loading }: SettingsMetricsProps) => {
   const items = [
