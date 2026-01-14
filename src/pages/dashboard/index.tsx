@@ -1,16 +1,16 @@
-import { getAllShareds, deleteShared } from '@actions/shareds';
-import { DashboardContainer, ContentContainer } from './styles';
 import { useNavigate } from 'react-router-dom';
-import useSharedsStore from '@stores/shareds';
 import { useEffect, useState } from 'react';
-import useSystemStore from '@stores/system';
-import Loading from '@components/loading';
-import useAction from '@hooks/useAction';
 
 import DeleteConfirmationDialog from './subcomponents/deleteDialog';
+import { getAllShareds, deleteShared } from '@actions/shareds';
+import { DashboardContainer, ContentContainer } from './styles';
 import DashboardEmptyState from './subcomponents/emptyState';
 import DashboardHeader from './subcomponents/header';
 import DashboardGrid from './subcomponents/grid';
+import useSharedsStore from '@stores/shareds';
+import useSystemStore from '@stores/system';
+import useAction from '@hooks/useAction';
+import Loading from '@components/loading';
 
 import type { Shared } from '@actions/shareds/types';
 
@@ -29,23 +29,13 @@ const Dashboard = () => {
   const loadShareds = async () => {
     setLoading(true);
     const result = await getAllShareds();
-    if (result && Array.isArray(result)) {
-      setShareds(result);
-    }
+    if (result && Array.isArray(result)) setShareds(result);
     setLoading(false);
   };
 
-  const handleCreate = () => {
-    navigate('/dashboard/edit');
-  };
-
-  const handleEdit = (shared: Shared) => {
-    navigate(`/dashboard/edit?slug=${shared.slug}`);
-  };
-
-  const handleSettings = () => {
-    navigate('/dashboard/settings');
-  };
+  const handleCreate = () => navigate('/dashboard/edit');
+  const handleEdit = (shared: Shared) => navigate(`/dashboard/edit?slug=${shared.slug}`);
+  const handleSettings = () => navigate('/dashboard/settings');
 
   const handleDeleteClick = (shared: Shared) => {
     setSharedToDelete(shared);
@@ -69,9 +59,7 @@ const Dashboard = () => {
     setSharedToDelete(null);
   };
 
-  if (loading) {
-    return <Loading message="Carregando compartilhamentos" />;
-  }
+  if (loading) return <Loading message="Carregando compartilhamentos" />;
 
   return (
     <DashboardContainer>
@@ -83,19 +71,17 @@ const Dashboard = () => {
           onSettings={handleSettings}
           onCreate={handleCreate}
         />
-
         {data.length === 0 ? (
           <DashboardEmptyState onCreate={handleCreate} />
         ) : (
-          <DashboardGrid 
-            data={data} 
-            onEdit={handleEdit} 
-            onDelete={handleDeleteClick} 
+          <DashboardGrid
+            data={data}
+            onEdit={handleEdit}
+            onDelete={handleDeleteClick}
           />
         )}
       </ContentContainer>
-
-      <DeleteConfirmationDialog 
+      <DeleteConfirmationDialog
         open={deleteDialogOpen}
         itemName={sharedToDelete?.title}
         onClose={() => setDeleteDialogOpen(false)}

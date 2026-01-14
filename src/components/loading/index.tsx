@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
-import './styles.css';
+import { Container, Spinner, Message } from './styles';
 
 import type { LoadingProps } from './types';
 
@@ -9,18 +9,19 @@ const Loading = ({ showSpinner = true, message = 'Carregando' }: LoadingProps) =
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setDots(prev => (prev.length < 3 ? prev + '.' : ''));
+      setDots((prev) => (prev.length < 3 ? prev + '.' : ''));
     }, 500);
+
     return () => clearInterval(interval);
   }, []);
 
   return (
-    <div className="loading-container">
-      {showSpinner && <div className="loading-spinner" />}
-      <h6 className="loading-message">
+    <Container>
+      {showSpinner && <Spinner />}
+      <Message variant="h6">
         {message}{dots}
-      </h6>
-    </div>
+      </Message>
+    </Container>
   );
 };
 

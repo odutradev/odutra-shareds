@@ -1,4 +1,4 @@
 export interface LoadingProps {
-    showSpinner?: Boolean;
-    message?: String
-};
+  showSpinner?: boolean;
+  message?: string;
+}
