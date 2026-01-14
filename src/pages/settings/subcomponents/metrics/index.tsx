@@ -1,49 +1,74 @@
-import { AccessTime, Slideshow, Visibility } from '@mui/icons-material';
-import { CircularProgress, Box, Typography } from '@mui/material';
+import { AccessTime, Dashboard, Timer, Visibility } from '@mui/icons-material';
+import { CardContent, Skeleton, Box } from '@mui/material';
 
-import { MetricsContainer, MetricCard, SectionTitle } from './styles';
+import { MetricsContainer, MetricCard, IconWrapper, MetricValue, MetricLabel } from './styles';
 
 import type { SettingsMetricsProps } from './types';
 
+const formatTime = (seconds: number): string => {
+  if (seconds < 60) return `${seconds}s`;
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+
+  if (hours > 0) return `${hours}h ${minutes}m`;
+  return `${minutes}m`;
+};
+
 const SettingsMetrics = ({ metrics, loading }: SettingsMetricsProps) => {
+  const items = [
+    {
+      label: 'Compartilhamentos',
+      value: metrics?.presentationsCount || 0,
+      icon: <Dashboard />,
+      color: 'primary'
+    },
+    {
+      label: 'Visualizações Totais',
+      value: metrics?.viewsCount || 0,
+      icon: <Visibility />,
+      color: 'secondary'
+    },
+    {
+      label: 'Registros de Tempo',
+      value: metrics?.timeRecordsCount || 0,
+      icon: <AccessTime />,
+      color: 'info'
+    },
+    {
+      label: 'Tempo Total em Tela',
+      value: formatTime(metrics?.totalTimeSpent || 0),
+      icon: <Timer />,
+      color: 'success'
+    }
+  ];
+
   return (
-    <Box>
-      <SectionTitle variant="h6">Visão Geral do Sistema</SectionTitle>
-      <MetricsContainer>
-        <MetricCard>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, color: 'primary.main' }}>
-            <Slideshow />
-            <Typography variant="subtitle2" fontWeight={600}>Compartilhamentos</Typography>
-          </Box>
-          <Typography variant="h3" fontWeight={700}>
-            {loading ? <CircularProgress size={20} /> : metrics?.presentationsCount || 0}
-          </Typography>
-          <Typography variant="caption" color="text.secondary">Cadastrados no sistema</Typography>
-        </MetricCard>
+    <MetricsContainer>
+      {items.map((item, index) => (
+        <MetricCard key={index}>
+          {}
+          <CardContent sx={{ display: 'flex', alignItems: 'center', p: '16px !important' }}>
+            <IconWrapper color={item.color as any}>
+              {item.icon}
+            </IconWrapper>
 
-        <MetricCard>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, color: 'secondary.main' }}>
-            <Visibility />
-            <Typography variant="subtitle2" fontWeight={600}>Total de Views</Typography>
-          </Box>
-          <Typography variant="h3" fontWeight={700}>
-            {loading ? <CircularProgress size={20} /> : metrics?.viewsCount || 0}
-          </Typography>
-          <Typography variant="caption" color="text.secondary">Visualizações registradas</Typography>
+            {}
+            <Box sx={{ flex: 1, minWidth: 0 }}>
+              <MetricLabel variant="body2" color="text.secondary" title={item.label}>
+                {item.label}
+              </MetricLabel>
+              {loading ? (
+                <Skeleton width={50} height={30} />
+              ) : (
+                <MetricValue variant="h4" title={String(item.value)}>
+                  {item.value}
+                </MetricValue>
+              )}
+            </Box>
+          </CardContent>
         </MetricCard>
-
-        <MetricCard>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, color: 'primary.main' }}>
-            <AccessTime />
-            <Typography variant="subtitle2" fontWeight={600}>Registros de Tempo</Typography>
-          </Box>
-          <Typography variant="h3" fontWeight={700}>
-            {loading ? <CircularProgress size={20} /> : metrics?.timeRecordsCount || 0}
-          </Typography>
-          <Typography variant="caption" color="text.secondary">Pings de atividade</Typography>
-        </MetricCard>
-      </MetricsContainer>
-    </Box>
+      ))}
+    </MetricsContainer>
   );
 };
 

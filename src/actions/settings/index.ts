@@ -14,18 +14,35 @@ const getCount = async (collection: string): Promise<number> => {
   }
 };
 
+const getTotalTime = async (): Promise<number> => {
+  try {
+    const response = await api.get('/kv/analytics_time/get-all?pagination=false');
+    const data = response.data?.result || response.data?.data || [];
+    if (!Array.isArray(data)) return 0;
+
+    return data.reduce((acc: number, item: any) => {
+      const time = Number(item.data?.timeSpent || item.timeSpent);
+      return acc + (isNaN(time) ? 0 : time);
+    }, 0);
+  } catch {
+    return 0;
+  }
+};
+
 export const getSystemMetrics = async (): TypeOrError<SystemMetrics> => {
   try {
-    const [presentationsCount, viewsCount, timeRecordsCount] = await Promise.all([
+    const [presentationsCount, viewsCount, timeRecordsCount, totalTimeSpent] = await Promise.all([
       getCount('shareds'),
       getCount('analytics_views'),
-      getCount('analytics_time')
+      getCount('analytics_time'),
+      getTotalTime()
     ]);
 
     return {
       presentationsCount,
       viewsCount,
-      timeRecordsCount
+      timeRecordsCount,
+      totalTimeSpent
     };
   } catch (error) {
     return manageActionError(error);
