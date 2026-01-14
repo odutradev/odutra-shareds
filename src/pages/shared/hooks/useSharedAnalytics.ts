@@ -5,8 +5,8 @@ import { createTimeEvent, createViewEvent } from '@actions/analytics';
 import type { Shared } from '@actions/shareds/types';
 
 export const useSharedAnalytics = (shared: Shared | null) => {
-  const viewRecordedSlugRef = useRef<string | null>(null);
   const lastSentTimeRef = useRef<number>(0);
+  const viewRecordedSlugRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (!shared) return;

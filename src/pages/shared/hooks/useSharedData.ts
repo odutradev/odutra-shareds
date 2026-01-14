@@ -6,10 +6,10 @@ import { getShared } from '@actions/shareds';
 import type { Shared } from '@actions/shareds/types';
 
 export const useSharedData = () => {
-  const [shared, setShared] = useState<Shared | null>(null);
-  const [error, setError] = useState<string | null>(null);
   const { id: slug } = useParams<{ id: string }>();
+  const [shared, setShared] = useState<Shared | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!slug) {

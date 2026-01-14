@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useMemo } from 'react';
 
 import { Frame } from './styles';
 
@@ -9,34 +9,32 @@ interface ContentFrameProps {
 }
 
 const ContentFrame = ({ shared }: ContentFrameProps) => {
-  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const srcDoc = useMemo(() => `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>${shared.title}</title>
+        <style>
+          body { margin: 0; padding: 0; }
+          ${shared.css || ''}
+        </style>
+      </head>
+      <body>
+        ${shared.html}
+        ${shared.js ? `<script>${shared.js}</script>` : ''}
+      </body>
+    </html>
+  `, [shared]);
 
-  useEffect(() => {
-    const doc = iframeRef.current?.contentDocument;
-    if (!doc) return;
-
-    const htmlContent = `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <meta charset="UTF-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <title>${shared.title}</title>
-          ${shared.css ? `<style>${shared.css}</style>` : ''}
-        </head>
-        <body>
-          ${shared.html}
-          ${shared.js ? `<script>${shared.js}</script>` : ''}
-        </body>
-      </html>
-    `;
-
-    doc.open();
-    doc.write(htmlContent);
-    doc.close();
-  }, [shared]);
-
-  return <Frame ref={iframeRef} title={shared.title} />;
+  return (
+    <Frame
+      sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
+      srcDoc={srcDoc}
+      title={shared.title}
+    />
+  );
 };
 
 export default ContentFrame;
