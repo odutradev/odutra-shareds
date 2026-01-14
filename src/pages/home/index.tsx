@@ -1,139 +1,28 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Typography, Button, Box, IconButton, Tooltip } from '@mui/material';
-import { Visibility, VisibilityOff } from '@mui/icons-material';
-import { HomeContainer, LoginCard, Logo, PinInput, PinContainer } from './styles';
-import logo from '@assets/imgs/logo.svg';
+import LoginForm from './subcomponents/loginForm';
+import { HomeContainer } from './styles';
 import useSystemStore from '@stores/system';
+
 const Home = () => {
   const navigate = useNavigate();
   const { login, system: { isAuthenticated } } = useSystemStore();
-  const [pin, setPin] = useState<string[]>(new Array(6).fill(''));
-  const [showPin, setShowPin] = useState(false);
-  const [error, setError] = useState(false);
-  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+
   useEffect(() => {
-    if (isAuthenticated) {
-        navigate('/dashboard/projects');
-    }
+    if (isAuthenticated) navigate('/dashboard/projects');
   }, [isAuthenticated, navigate]);
-  useEffect(() => {
-    inputRefs.current[0]?.focus();
-  }, []);
-  const handleLogin = (code: string) => {
+
+  const handleLoginAttempt = (code: string) => {
     const success = login(code);
-    if (success) {
-        navigate('/dashboard/projects');
-    } else {
-        setError(true);
-        setTimeout(() => {
-            setPin(new Array(6).fill(''));
-            setError(false);
-            inputRefs.current[0]?.focus();
-        }, 500);
-    }
+    if (success) navigate('/dashboard/projects');
+    return success;
   };
-  const handleChange = (index: number, value: string) => {
-    setError(false);
-    const digit = value.replace(/\D/g, '').slice(-1);
-    const newPin = [...pin];
-    newPin[index] = digit;
-    setPin(newPin);
-    if (digit && index < 5) {
-        inputRefs.current[index + 1]?.focus();
-    }
-    const fullPin = newPin.join('');
-    if (fullPin.length === 6 && !newPin.includes('')) {
-        handleLogin(fullPin);
-    }
-  };
-  const handleKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Backspace') {
-        if (!pin[index] && index > 0) {
-            const newPin = [...pin];
-            newPin[index - 1] = '';
-            setPin(newPin);
-            inputRefs.current[index - 1]?.focus();
-        }
-    }
-    if (e.key === 'ArrowLeft' && index > 0) {
-        inputRefs.current[index - 1]?.focus();
-    }
-    if (e.key === 'ArrowRight' && index < 5) {
-        inputRefs.current[index + 1]?.focus();
-    }
-  };
-  const handlePaste = (e: React.ClipboardEvent) => {
-    e.preventDefault();
-    const pastedData = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
-    if (pastedData) {
-        const newPin = [...pin];
-        pastedData.split('').forEach((char, i) => {
-            if (i < 6) newPin[i] = char;
-        });
-        setPin(newPin);
-        const nextIndex = Math.min(pastedData.length, 5);
-        inputRefs.current[nextIndex]?.focus();
-        if (newPin.join('').length === 6 && !newPin.includes('')) {
-            handleLogin(newPin.join(''));
-        }
-    }
-  };
+
   return (
     <HomeContainer>
-      <LoginCard elevation={0}>
-        <Box sx={{ textAlign: 'center' }}>
-          <Logo src={logo} alt="Zeck Logo" />
-          <Typography variant="h5" fontWeight="bold" gutterBottom>
-            Acesso Restrito
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Digite o PIN de acesso
-          </Typography>
-        </Box>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mt: 1 }}>
-            <Box sx={{ position: 'relative' }}>
-                <PinContainer onPaste={handlePaste}>
-                    {pin.map((digit, index) => (
-                    <PinInput
-                        key={index}
-                        ref={(el: HTMLInputElement | null) => { inputRefs.current[index] = el; }}
-                        type={showPin ? 'text' : 'password'}
-                        value={digit}
-                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange(index, e.target.value)}
-                        onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => handleKeyDown(index, e)}
-                        className={error ? 'error' : ''}
-                        autoComplete="off"
-                        inputMode="numeric"
-                        maxLength={1}
-                    />
-                    ))}
-                </PinContainer>
-                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 1 }}>
-                    <Tooltip title={showPin ? "Ocultar PIN" : "Mostrar PIN"}>
-                        <IconButton
-                            onClick={() => setShowPin(!showPin)}
-                            size="small"
-                            sx={{ color: 'text.secondary' }}
-                        >
-                            {showPin ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
-                        </IconButton>
-                    </Tooltip>
-                </Box>
-            </Box>
-            <Button
-                variant="contained"
-                size="large"
-                fullWidth
-                onClick={() => handleLogin(pin.join(''))}
-                disabled={pin.some(p => p === '')}
-                sx={{ height: 48 }}
-            >
-                Entrar
-            </Button>
-        </Box>
-      </LoginCard>
+      <LoginForm onLogin={handleLoginAttempt} />
     </HomeContainer>
   );
 };
+
 export default Home;
