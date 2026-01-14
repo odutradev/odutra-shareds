@@ -1,26 +1,25 @@
 import { useNavigate } from 'react-router-dom';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 
-import DeleteConfirmationDialog from './subcomponents/deleteDialog';
-import { getAllShareds, deleteShared } from '@actions/shareds';
 import { DashboardContainer, ContentContainer } from './styles';
+import { getAllShareds, deleteShared } from '@actions/shareds';
 import DashboardEmptyState from './subcomponents/emptyState';
+import useConfirmDialog from '@hooks/useConfirmDialog';
+import ConfirmDialog from '@components/confirmDialog';
 import DashboardHeader from './subcomponents/header';
 import DashboardGrid from './subcomponents/grid';
 import useSharedsStore from '@stores/shareds';
 import useSystemStore from '@stores/system';
-import useAction from '@hooks/useAction';
 import Loading from '@components/loading';
+import useAction from '@hooks/useAction';
 
 import type { Shared } from '@actions/shareds/types';
 
 const Dashboard = () => {
   const { shareds: { data, loading }, setShareds, removeShared, setLoading } = useSharedsStore();
   const { system: { theme }, toggleTheme } = useSystemStore();
+  const { confirm, props: confirmProps } = useConfirmDialog();
   const navigate = useNavigate();
-
-  const [sharedToDelete, setSharedToDelete] = useState<Shared | null>(null);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   useEffect(() => {
     loadShareds();
@@ -37,26 +36,25 @@ const Dashboard = () => {
   const handleEdit = (shared: Shared) => navigate(`/dashboard/edit?slug=${shared.slug}`);
   const handleSettings = () => navigate('/dashboard/settings');
 
-  const handleDeleteClick = (shared: Shared) => {
-    setSharedToDelete(shared);
-    setDeleteDialogOpen(true);
-  };
+  const handleDelete = async (shared: Shared) => {
+    const isConfirmed = await confirm({
+      title: 'Excluir compartilhamento?',
+      message: `Você está prestes a excluir "${shared.title}". Esta ação é irreversível e todos os dados de estatísticas serão perdidos.`,
+      confirmText: 'Excluir',
+      variant: 'error',
+    });
 
-  const handleDeleteConfirm = async () => {
-    if (!sharedToDelete) return;
+    if (!isConfirmed) return;
 
     await useAction({
-      action: () => deleteShared(sharedToDelete._id),
-      callback: () => removeShared(sharedToDelete._id),
+      action: () => deleteShared(shared._id),
+      callback: () => removeShared(shared._id),
       toastMessages: {
         pending: 'Deletando compartilhamento...',
         success: 'Compartilhamento deletado!',
         error: 'Erro ao deletar compartilhamento',
       },
     });
-
-    setDeleteDialogOpen(false);
-    setSharedToDelete(null);
   };
 
   if (loading) return <Loading message="Carregando compartilhamentos" />;
@@ -77,16 +75,11 @@ const Dashboard = () => {
           <DashboardGrid
             data={data}
             onEdit={handleEdit}
-            onDelete={handleDeleteClick}
+            onDelete={handleDelete}
           />
         )}
       </ContentContainer>
-      <DeleteConfirmationDialog
-        open={deleteDialogOpen}
-        itemName={sharedToDelete?.title}
-        onClose={() => setDeleteDialogOpen(false)}
-        onConfirm={handleDeleteConfirm}
-      />
+      <ConfirmDialog {...confirmProps} />
     </DashboardContainer>
   );
 };
