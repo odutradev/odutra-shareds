@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 
+import { SHARED_CACHE_TTL } from '@stores/sharedCache/defaultValues';
+import useSharedCache from '@stores/sharedCache';
 import { getShared } from '@actions/shareds';
-import useSharedCache, { CACHE_TTL } from '@stores/sharedCache';
+
 
 import type { Shared } from '@actions/shareds/types';
 
@@ -13,7 +15,7 @@ export const useSharedData = () => {
   const cachedEntry = useSharedCache((state) => state.data[slug]);
   const setSharedCache = useSharedCache((state) => state.setShared);
 
-  const isCacheValid = cachedEntry && (Date.now() - cachedEntry.timestamp < CACHE_TTL);
+  const isCacheValid = cachedEntry && (Date.now() - cachedEntry.timestamp < SHARED_CACHE_TTL);
 
   const [shared, setShared] = useState<Shared | null>(isCacheValid ? cachedEntry.shared : null);
   const [loading, setLoading] = useState(!isCacheValid);

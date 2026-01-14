@@ -1,24 +1,13 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
-import type { Shared } from '@actions/shareds/types';
-
-export const CACHE_TTL = 60000;
-
-interface CacheEntry {
-  shared: Shared;
-  timestamp: number;
-}
-
-interface SharedCacheState {
-  data: Record<string, CacheEntry>;
-  setShared: (slug: string, shared: Shared) => void;
-}
+import { sharedCacheDefaultValues } from './defaultValues';
+import type { SharedCacheState } from './types';
 
 const useSharedCache = create<SharedCacheState>()(
   persist(
     (set) => ({
-      data: {},
+      ...sharedCacheDefaultValues,
       setShared: (slug, shared) =>
         set((state) => {
           try {
