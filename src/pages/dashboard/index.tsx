@@ -1,9 +1,9 @@
 import { useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
 
-import { DashboardContainer, ContentContainer } from './styles';
-import { getAllShareds, deleteShared } from '@actions/shareds';
 import DashboardEmptyState from './subcomponents/emptyState';
+import { getAllShareds, deleteShared } from '@actions/shareds';
+import { DashboardContainer, ContentContainer } from './styles';
 import useConfirmDialog from '@hooks/useConfirmDialog';
 import ConfirmDialog from '@components/confirmDialog';
 import DashboardHeader from './subcomponents/header';
@@ -16,7 +16,7 @@ import useAction from '@hooks/useAction';
 import type { Shared } from '@actions/shareds/types';
 
 const Dashboard = () => {
-  const { shareds: { data, loading }, setShareds, removeShared, setLoading } = useSharedsStore();
+  const { data, loading, setShareds, removeShared, setLoading } = useSharedsStore();
   const { system: { theme }, toggleTheme } = useSystemStore();
   const { confirm, props: confirmProps } = useConfirmDialog();
   const navigate = useNavigate();
@@ -64,10 +64,10 @@ const Dashboard = () => {
       <ContentContainer>
         <DashboardHeader
           theme={theme}
-          showCreateButton={data.length > 0}
-          onToggleTheme={toggleTheme}
-          onSettings={handleSettings}
           onCreate={handleCreate}
+          onSettings={handleSettings}
+          onToggleTheme={toggleTheme}
+          showCreateButton={data.length > 0}
         />
         {data.length === 0 ? (
           <DashboardEmptyState onCreate={handleCreate} />
