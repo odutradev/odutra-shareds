@@ -17,7 +17,7 @@ import useSystemStore from '@stores/system';
 import { getAllShareds, deleteShared } from '@actions/shareds';
 import useAction from '@hooks/useAction';
 import Loading from '@components/loading';
-import SharedCard from './components/SharedCard';
+import SharedCard from './subcomponents/sharedCard';
 import {
   DashboardContainer,
   ContentContainer,
