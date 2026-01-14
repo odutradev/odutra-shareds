@@ -1,6 +1,6 @@
 import { ToastContainer } from 'react-toastify';
 import { createRoot } from 'react-dom/client';
-import { StrictMode, useEffect, useState } from 'react';
+import { StrictMode, useEffect } from 'react';
 
 import { toastContainerConfig } from '@assets/data/toast';
 import defaultConfig from '@assets/config/default';
@@ -9,43 +9,26 @@ import { lightTheme, darkTheme } from '@styles/theme';
 import GlobalStyles from '@styles/globalStyles';
 import CssBaseline from '@mui/material/CssBaseline';
 import { ThemeProvider } from '@mui/material';
+import useSystemStore from '@stores/system';
 
-const getInitialTheme = () => {
-  if (typeof window !== 'undefined' && window.localStorage) {
-    const savedThemeMode = window.localStorage.getItem('theme');
-    return savedThemeMode === 'dark' ? darkTheme : lightTheme;
-  }
-  return lightTheme;
-};
 const App = () => {
-  const [activeTheme, setActiveTheme] = useState(getInitialTheme());
+  const { system: { theme }, initializeTheme } = useSystemStore();
 
-  useEffect(() => {
-    const handleStorageChange = (event: StorageEvent) => {
-      if (event.key === 'theme') {
-        setActiveTheme(getInitialTheme());
-      }
-    };
-
-    window.addEventListener('storage', handleStorageChange);
-
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-    };
-  }, []);
   useEffect(() => {
+    initializeTheme();
     console.log(`version: ${defaultConfig.version} - mode: ${defaultConfig.mode}`);
   }, []);
 
+  const currentTheme = theme === 'dark' ? darkTheme : lightTheme;
+
   return (
-    <ThemeProvider theme={activeTheme}>
+    <ThemeProvider theme={currentTheme}>
       <ToastContainer {...toastContainerConfig} />
       <CssBaseline />
       <title>Shareds</title>
-
       <Router />
-<GlobalStyles />
-   </ ThemeProvider>
+      <GlobalStyles />
+    </ThemeProvider>
   );
 };
 

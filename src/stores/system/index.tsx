@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import { systemStoreDefaultValues } from "./defaultValues";
 import { SystemStore } from "./types";
+
 const useSystemStore = create<SystemStore>()(
   persist(
     (set, get) => ({
@@ -29,6 +30,14 @@ const useSystemStore = create<SystemStore>()(
           }));
         }
       },
+      toggleTheme: () => {
+        set((state) => ({
+          system: {
+            ...state.system,
+            theme: state.system.theme === 'light' ? 'dark' : 'light'
+          }
+        }));
+      },
       login: (pin: string) => {
         const correctPin = import.meta.env.VITE_PIN;
         if (pin === correctPin) {
@@ -55,4 +64,5 @@ const useSystemStore = create<SystemStore>()(
     }
   )
 );
+
 export default useSystemStore;

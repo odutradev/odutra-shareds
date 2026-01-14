@@ -1,5 +1,5 @@
 import { Box, Button, Switch, Container, Paper, Typography } from '@mui/material';
-import { styled } from '@mui/material/styles';
+import { styled, alpha } from '@mui/material/styles';
 
 export const EditorContainer = styled(Container)(({ theme }) => ({
   paddingTop: theme.spacing(4),
@@ -115,7 +115,6 @@ export const StatusSwitch = styled(Switch)(({ theme }) => ({
 
 export const DashboardGrid = styled(Box)(({ theme }) => ({
   display: 'grid',
-
   gridTemplateColumns: 'repeat(3, 1fr)',
   gap: theme.spacing(2),
   marginBottom: theme.spacing(4),
@@ -146,16 +145,16 @@ export const MetricCard = styled(Paper)(({ theme }) => ({
     justifyContent: 'center',
 
     '&.view': {
-      backgroundColor: 'rgba(136, 132, 216, 0.1)',
-      color: '#8884d8',
+      backgroundColor: alpha(theme.palette.primary.main, 0.1),
+      color: theme.palette.primary.main,
     },
     '&.time': {
-      backgroundColor: 'rgba(130, 202, 157, 0.1)',
-      color: '#82ca9d',
+      backgroundColor: alpha(theme.palette.secondary.main, 0.1),
+      color: theme.palette.secondary.main,
     },
     '&.total': {
-      backgroundColor: 'rgba(255, 128, 66, 0.1)',
-      color: '#ff8042',
+      backgroundColor: alpha(theme.palette.secondary.main, 0.1),
+      color: theme.palette.secondary.main,
     }
   }
 }));
@@ -179,6 +178,5 @@ export const ChartContainer = styled(Paper)(({ theme }) => ({
   border: `1px solid ${theme.palette.divider}`,
   boxShadow: 'none',
   backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.01)',
-
   gridColumn: '1 / -1',
 }));

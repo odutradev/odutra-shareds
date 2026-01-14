@@ -4,12 +4,10 @@ export const lightTheme = createTheme({
   palette: {
     mode: 'light',
     primary: {
-      main: '#646cff',
-      light: '#747bff',
-      dark: '#535bf2',
+      main: '#5BC3EB',
     },
     secondary: {
-      main: '#f50057',
+      main: '#F06449',
     },
     background: {
       default: '#ffffff',
@@ -50,7 +48,7 @@ export const lightTheme = createTheme({
           textTransform: 'none',
           transition: 'border-color 0.25s',
           '&:hover': {
-            borderColor: '#646cff',
+            borderColor: '#5BC3EB',
           },
           '&:focus-visible': {
             outline: '4px auto -webkit-focus-ring-color',
@@ -65,12 +63,10 @@ export const darkTheme = createTheme({
   palette: {
     mode: 'dark',
     primary: {
-      main: '#646cff',
-      light: '#747bff',
-      dark: '#535bf2',
+      main: '#5BC3EB',
     },
     secondary: {
-      main: '#f50057',
+      main: '#F06449',
     },
     background: {
       default: '#242424',
@@ -111,7 +107,7 @@ export const darkTheme = createTheme({
           textTransform: 'none',
           transition: 'border-color 0.25s',
           '&:hover': {
-            borderColor: '#646cff',
+            borderColor: '#5BC3EB',
           },
           '&:focus-visible': {
             outline: '4px auto -webkit-focus-ring-color',

@@ -1,4 +1,5 @@
 export type ThemeMode = "light" | "dark";
+
 export interface SystemStoreData {
   theme: ThemeMode;
   loading: boolean;
@@ -7,6 +8,7 @@ export interface SystemStoreData {
   count: number;
   isAuthenticated: boolean;
 }
+
 export interface SystemStore {
   system: SystemStoreData;
   setSystem: (system: SystemStoreData) => void;
@@ -14,6 +16,7 @@ export interface SystemStore {
   setLoading: (currentLoading?: boolean) => void;
   setCount: (count: number) => void;
   initializeTheme: () => void;
+  toggleTheme: () => void;
   reset: () => void;
   login: (pin: string) => boolean;
   logout: () => void;
