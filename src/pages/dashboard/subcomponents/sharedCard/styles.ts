@@ -1,14 +1,16 @@
-import { Card, CardActions, IconButton } from '@mui/material';
+import { Card, CardActions, IconButton, Typography } from '@mui/material';
 import { styled } from '@mui/material/styles';
 
 export const StyledCard = styled(Card)(({ theme }) => ({
   borderRadius: '16px',
   boxShadow: '0px 4px 20px rgba(0, 0, 0, 0.05)',
-  transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+  transition: 'transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease',
   border: `1px solid ${theme.palette.divider}`,
+  cursor: 'pointer',
   '&:hover': {
     transform: 'translateY(-4px)',
     boxShadow: '0px 12px 24px rgba(0, 0, 0, 0.1)',
+    borderColor: theme.palette.primary.main,
   },
 }));
 
@@ -38,3 +40,18 @@ export const DeleteButton = styled(IconButton)(({ theme }) => ({
     color: theme.palette.error.contrastText,
   },
 }));
+
+export const SlugLink = styled(Typography)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(0.5),
+  textDecoration: 'none',
+  color: theme.palette.text.secondary,
+  fontSize: '0.875rem',
+  transition: 'color 0.2s',
+  marginTop: theme.spacing(1),
+  '&:hover': {
+    color: theme.palette.primary.main,
+    textDecoration: 'underline',
+  },
+})) as typeof Typography;
