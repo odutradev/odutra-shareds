@@ -32,13 +32,13 @@ const SettingsMetrics = ({ metrics, loading }: SettingsMetricsProps) => {
       label: 'Registros de Tempo',
       value: metrics?.timeRecordsCount || 0,
       icon: <AccessTime />,
-      color: 'info'
+      color: 'primary'
     },
     {
       label: 'Tempo Total em Tela',
       value: formatTime(metrics?.totalTimeSpent || 0),
       icon: <Timer />,
-      color: 'success'
+      color: 'secondary'
     }
   ];
 
