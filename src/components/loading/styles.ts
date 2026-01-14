@@ -1,35 +1,31 @@
-import { styled, keyframes } from '@mui/material/styles';
+import { keyframes, styled } from '@mui/material/styles';
 import { Box, Typography } from '@mui/material';
 
-const spin = keyframes`
+import type { Theme } from '@mui/material/styles';
+
+const rotate = keyframes`
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 `;
 
-export const Container = styled(Box)(({ theme }) => ({
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'center',
-  justifyContent: 'center',
-  padding: theme.spacing(4),
-  gap: theme.spacing(2),
-  width: '100%',
-  height: '100%',
-  minHeight: '200px',
-}));
+export const Container = styled(Box)`
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  justify-content: center;
+  width: 100%;
+`;
 
-export const Spinner = styled(Box)(({ theme }) => ({
-  width: '40px',
-  height: '40px',
-  border: `3px solid ${theme.palette.action.hover}`,
-  borderTop: `3px solid ${theme.palette.primary.main}`,
-  borderRadius: '50%',
-  animation: `${spin} 1s linear infinite`,
-}));
+export const Spinner = styled('div')`
+  animation: ${rotate} 1s linear infinite;
+  border: 4px solid ${({ theme }: { theme: Theme }) => theme.palette.divider};
+  border-left-color: ${({ theme }: { theme: Theme }) => theme.palette.primary.main};
+  border-radius: 50%;
+  height: 40px;
+  width: 40px;
+`;
 
-export const Message = styled(Typography)(({ theme }) => ({
-  color: theme.palette.text.secondary,
-  fontWeight: 500,
-  minWidth: '120px',
-  textAlign: 'center',
-}));
+export const Message = styled(Typography)`
+  margin-top: 16px;
+`;

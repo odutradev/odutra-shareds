@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 
-import { Container, Spinner, Message } from './styles';
+import { Container, Message, Spinner } from './styles';
 
 import type { LoadingProps } from './types';
 
-const Loading = ({ showSpinner = true, message = 'Carregando' }: LoadingProps) => {
+const Loading = ({ message = 'Carregando', showSpinner = true }: LoadingProps) => {
   const [dots, setDots] = useState('');
 
   useEffect(() => {
