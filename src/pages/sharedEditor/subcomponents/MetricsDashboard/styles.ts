@@ -26,9 +26,9 @@ export const MetricCard = styled(Paper)(({ theme }) => ({
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    '&.view': { backgroundColor: alpha(theme.palette.primary.main, 0.1), color: theme.palette.primary.main },
+    '&.total': { backgroundColor: alpha(theme.palette.primary.main, 0.1), color: theme.palette.primary.main },
     '&.time': { backgroundColor: alpha(theme.palette.secondary.main, 0.1), color: theme.palette.secondary.main },
-    '&.total': { backgroundColor: alpha(theme.palette.secondary.main, 0.1), color: theme.palette.secondary.main }
+    '&.view': { backgroundColor: alpha(theme.palette.primary.main, 0.1), color: theme.palette.primary.main },
   }
 }));
 
