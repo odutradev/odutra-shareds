@@ -2,13 +2,21 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 
 import { getShared } from '@actions/shareds';
+import useSharedCache, { CACHE_TTL } from '@stores/sharedCache';
 
 import type { Shared } from '@actions/shareds/types';
 
 export const useSharedData = () => {
-  const { id: slug } = useParams<{ id: string }>();
-  const [shared, setShared] = useState<Shared | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { id } = useParams<{ id: string }>();
+  const slug = id ?? '';
+
+  const cachedEntry = useSharedCache((state) => state.data[slug]);
+  const setSharedCache = useSharedCache((state) => state.setShared);
+
+  const isCacheValid = cachedEntry && (Date.now() - cachedEntry.timestamp < CACHE_TTL);
+
+  const [shared, setShared] = useState<Shared | null>(isCacheValid ? cachedEntry.shared : null);
+  const [loading, setLoading] = useState(!isCacheValid);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -18,36 +26,33 @@ export const useSharedData = () => {
       return;
     }
 
-    const load = async () => {
+    if (isCacheValid) {
+      setShared(cachedEntry.shared);
+      setLoading(false);
+      return;
+    }
+
+    const fetchShared = async () => {
       setLoading(true);
       setError(null);
-      
+
       const result = await getShared(slug);
 
       if (!result) {
         setError('Erro ao carregar compartilhamento');
-        setLoading(false);
-        return;
-      }
-
-      if ('error' in result) {
+      } else if ('error' in result) {
         setError('Compartilhamento não encontrado');
-        setLoading(false);
-        return;
-      }
-
-      if (!result.isActive) {
+      } else if (!result.isActive) {
         setError('Este conteúdo está inativo');
-        setLoading(false);
-        return;
+      } else {
+        setShared(result);
+        setSharedCache(slug, result);
       }
-
-      setShared(result);
       setLoading(false);
     };
 
-    load();
-  }, [slug]);
+    fetchShared();
+  }, [slug, isCacheValid, cachedEntry, setSharedCache]);
 
   return { shared, loading, error };
 };
