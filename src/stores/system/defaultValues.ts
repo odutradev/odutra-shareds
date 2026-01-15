@@ -1,4 +1,5 @@
 import { SystemStoreData } from "./types";
+
 export const systemStoreDefaultValues: SystemStoreData = {
   theme: "dark",
   loading: false,
@@ -6,4 +7,5 @@ export const systemStoreDefaultValues: SystemStoreData = {
   defaultUserTheme: null,
   count: 0,
   isAuthenticated: false,
+  sessionToken: null,
 };

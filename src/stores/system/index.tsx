@@ -44,16 +44,24 @@ const useSystemStore = create<SystemStore>()(
         const inputHash = await hashPin(pin);
         
         if (inputHash === correctPinHash) {
-            set((state) => ({
-                system: { ...state.system, isAuthenticated: true }
-            }));
-            return true;
+          set((state) => ({
+            system: { 
+              ...state.system, 
+              isAuthenticated: true,
+              sessionToken: inputHash 
+            }
+          }));
+          return true;
         }
         return false;
       },
       logout: () => {
         set((state) => ({
-            system: { ...state.system, isAuthenticated: false }
+          system: { 
+            ...state.system, 
+            isAuthenticated: false,
+            sessionToken: null 
+          }
         }));
       },
       reset: () => {
@@ -64,6 +72,18 @@ const useSystemStore = create<SystemStore>()(
     {
       name: "system-store",
       storage: createJSONStorage(() => localStorage),
+      partialize: (state) => ({
+        system: {
+          ...state.system,
+          isAuthenticated: false,
+          loading: false,
+        }
+      }),
+      onRehydrateStorage: () => (state) => {
+        if (state && state.system.sessionToken === import.meta.env.VITE_PIN) {
+          state.system.isAuthenticated = true;
+        }
+      },
     }
   )
 );
