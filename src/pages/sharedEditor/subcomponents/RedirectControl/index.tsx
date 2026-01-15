@@ -1,28 +1,31 @@
-import { Box, Switch, TextField, Typography } from '@mui/material';
 import { Link as LinkIcon } from '@mui/icons-material';
+import { Box, Switch, TextField, Typography } from '@mui/material';
 
+import { HeaderWrapper, IconWrapper, InfoWrapper, RedirectContainer } from './styles';
 import type { RedirectControlProps } from './types';
 
 const RedirectControl = ({ isRedirect, redirectUrl, onChangeRedirect, onChangeUrl }: RedirectControlProps) => {
   return (
-    <Box sx={{ p: 3, border: '1px solid', borderColor: 'divider', borderRadius: '12px', bgcolor: 'background.paper', transition: 'all 0.2s' }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: isRedirect ? 3 : 0 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <Box sx={{ p: 1, borderRadius: '8px', bgcolor: isRedirect ? 'primary.lighter' : 'action.hover', color: isRedirect ? 'primary.main' : 'text.secondary' }}>
+    <RedirectContainer>
+      <HeaderWrapper hasMargin={isRedirect}>
+        <InfoWrapper>
+          <IconWrapper active={isRedirect}>
             <LinkIcon />
-          </Box>
+          </IconWrapper>
           <Box>
-            <Typography variant="subtitle1" fontWeight={600}>Modo Redirecionador</Typography>
+            <Typography variant="subtitle1" fontWeight={600}>
+              Modo Redirecionador
+            </Typography>
             <Typography variant="body2" color="text.secondary">
               Ao invés de exibir conteúdo, redireciona o visitante para outra URL.
             </Typography>
           </Box>
-        </Box>
+        </InfoWrapper>
         <Switch
           checked={isRedirect}
           onChange={(e) => onChangeRedirect(e.target.checked)}
         />
-      </Box>
+      </HeaderWrapper>
 
       {isRedirect && (
         <TextField
@@ -35,7 +38,7 @@ const RedirectControl = ({ isRedirect, redirectUrl, onChangeRedirect, onChangeUr
           helperText="Certifique-se de incluir https://"
         />
       )}
-    </Box>
+    </RedirectContainer>
   );
 };
 

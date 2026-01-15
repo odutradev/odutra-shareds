@@ -11,6 +11,8 @@ export const EditorPaper = styled(Paper)(({ theme }) => ({
   borderRadius: '16px',
   overflow: 'hidden',
   border: `1px solid ${theme.palette.divider}`,
+  backgroundColor: theme.palette.background.paper,
+  backgroundImage: 'none',
 }));
 
 export const ContentArea = styled(Box)(({ theme }) => ({
