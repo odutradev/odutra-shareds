@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import { systemStoreDefaultValues } from "./defaultValues";
-import { hashPin, generateSessionSignature, validateSessionSignature } from "@utils/functions/security";
+import { hashPin, generateSessionSignature, validateSessionSignature, MAX_LOGIN_ATTEMPTS, LOCKOUT_DURATION } from "@utils/functions/security";
 import { SystemStore } from "./types";
 
 const useSystemStore = create<SystemStore>()(
@@ -40,6 +40,10 @@ const useSystemStore = create<SystemStore>()(
         }));
       },
       login: async (pin: string) => {
+        const { system } = get();
+        
+        if (system.lockoutUntil && Date.now() < system.lockoutUntil) return false;
+
         const correctPinHash = import.meta.env.VITE_PIN;
         const inputHash = await hashPin(pin);
         
@@ -49,11 +53,25 @@ const useSystemStore = create<SystemStore>()(
             system: { 
               ...state.system, 
               isAuthenticated: true,
-              sessionSignature: signature 
+              sessionSignature: signature,
+              loginAttempts: 0,
+              lockoutUntil: null
             }
           }));
           return true;
         }
+
+        const newAttempts = system.loginAttempts + 1;
+        const shouldLock = newAttempts >= MAX_LOGIN_ATTEMPTS;
+        
+        set((state) => ({
+          system: {
+            ...state.system,
+            loginAttempts: newAttempts,
+            lockoutUntil: shouldLock ? Date.now() + LOCKOUT_DURATION : null
+          }
+        }));
+
         return false;
       },
       logout: () => {

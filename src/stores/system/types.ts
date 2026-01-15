@@ -8,6 +8,8 @@ export interface SystemStoreData {
   count: number;
   isAuthenticated: boolean;
   sessionSignature: string | null;
+  loginAttempts: number;
+  lockoutUntil: number | null;
 }
 
 export interface SystemStore {

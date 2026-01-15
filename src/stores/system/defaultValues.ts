@@ -8,4 +8,6 @@ export const systemStoreDefaultValues: SystemStoreData = {
   count: 0,
   isAuthenticated: false,
   sessionSignature: null,
+  loginAttempts: 0,
+  lockoutUntil: null,
 };

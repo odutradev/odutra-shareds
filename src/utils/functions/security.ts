@@ -1,5 +1,8 @@
 const INTERNAL_SALT = "x9#mK2$nP!vL8@qR";
-const SESSION_DURATION = 1000 * 60 * 60 * 8; 
+const SESSION_DURATION = 1000 * 60 * 60 * 1;
+
+export const MAX_LOGIN_ATTEMPTS = 3;
+export const LOCKOUT_DURATION = 1000 * 60 * 5;
 
 export const hashPin = async (pin: string): Promise<string> => {
   const encoder = new TextEncoder();
