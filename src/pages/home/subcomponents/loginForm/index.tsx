@@ -109,11 +109,11 @@ const LoginForm = ({ onLogin }: LoginFormProps) => {
             {pin.map((digit, index) => (
               <PinInput
                 key={index}
-                ref={(el) => { inputRefs.current[index] = el; }}
+                ref={(el: any) => { inputRefs.current[index] = el; }}
                 type={showPin ? 'text' : 'password'}
                 value={digit}
-                onChange={(e) => handleChange(index, e.target.value)}
-                onKeyDown={(e) => handleKeyDown(index, e)}
+                onChange={(e: any) => handleChange(index, e.target.value)}
+                onKeyDown={(e: any) => handleKeyDown(index, e)}
                 className={error ? 'error' : ''}
                 disabled={validating}
                 autoComplete="off"
