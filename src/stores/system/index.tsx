@@ -76,7 +76,7 @@ const useSystemStore = create<SystemStore>()(
       partialize: (state) => ({
         system: {
           ...state.system,
-          isAuthenticated: false, // Nunca persiste o booleano
+          isAuthenticated: false,
           loading: false,
         }
       }),

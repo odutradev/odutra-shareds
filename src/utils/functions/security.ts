@@ -1,4 +1,5 @@
-const INTERNAL_SALT = "x9#mK2$nP!vL8@qR"; 
+const INTERNAL_SALT = "x9#mK2$nP!vL8@qR";
+const SESSION_DURATION = 1000 * 60 * 60 * 8; 
 
 export const hashPin = async (pin: string): Promise<string> => {
   const encoder = new TextEncoder();
@@ -9,15 +10,24 @@ export const hashPin = async (pin: string): Promise<string> => {
 };
 
 export const generateSessionSignature = (pinHash: string): string => {
-  return btoa(`${pinHash}:${INTERNAL_SALT}`);
+  const timestamp = Date.now();
+  return btoa(`${pinHash}:${timestamp}:${INTERNAL_SALT}`);
 };
 
 export const validateSessionSignature = (signature: string | null, correctEnvHash: string): boolean => {
   if (!signature) return false;
   try {
     const decoded = atob(signature);
-    const [hash, salt] = decoded.split(':');
-    return hash === correctEnvHash && salt === INTERNAL_SALT;
+    const [hash, timestampStr, salt] = decoded.split(':');
+    
+    if (!hash || !timestampStr || !salt) return false;
+
+    const timestamp = parseInt(timestampStr, 10);
+    const isValidTime = Date.now() - timestamp < SESSION_DURATION;
+    const isValidHash = hash === correctEnvHash;
+    const isValidSalt = salt === INTERNAL_SALT;
+
+    return isValidHash && isValidSalt && isValidTime;
   } catch {
     return false;
   }
