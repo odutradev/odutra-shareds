@@ -8,7 +8,8 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "publish": "npx pub --bump-package --build --push"
+    "publish": "npx pub --bump-package --build --push",
+    "pin": "node src/utils/scripts/generate-hash.js"
   },
   "dependencies": {
     "@monaco-editor/react": "^4.6.0",
