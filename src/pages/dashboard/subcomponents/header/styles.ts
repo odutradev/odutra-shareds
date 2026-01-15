@@ -1,32 +1,5 @@
-import { Box, Button, IconButton } from '@mui/material';
+import { Button, IconButton } from '@mui/material';
 import { styled } from '@mui/material/styles';
-
-export const HeaderContainer = styled(Box)(({ theme }) => ({
-  display: 'flex',
-  justifyContent: 'space-between',
-  alignItems: 'center',
-  marginBottom: theme.spacing(5),
-  [theme.breakpoints.down('sm')]: {
-    flexDirection: 'column',
-    alignItems: 'flex-start',
-    gap: theme.spacing(3),
-  },
-}));
-
-export const TitleSection = styled(Box)({
-  display: 'flex',
-  flexDirection: 'column',
-});
-
-export const ActionSection = styled(Box)(({ theme }) => ({
-  display: 'flex',
-  alignItems: 'center',
-  gap: theme.spacing(2),
-  [theme.breakpoints.down('sm')]: {
-    width: '100%',
-    justifyContent: 'space-between',
-  },
-}));
 
 export const HeaderIconButton = styled(IconButton)(({ theme }) => ({
   border: `1px solid ${theme.palette.divider}`,

@@ -23,7 +23,7 @@ const SharedEditor = () => {
 
   if (initialLoading) return <Loading message="Carregando editor..." />;
 
-  const isFormValid = !!formData.title && !!formData.slug && !slugError && !checkingSlug && !loading && 
+  const isFormValid = !!formData.title && !!formData.slug && !slugError && !checkingSlug && !loading &&
     (formData.isRedirect ? !!formData.redirectUrl : !!formData.html);
 
   return (
@@ -39,7 +39,7 @@ const SharedEditor = () => {
           <ContentArea>
             <Stack spacing={3}>
               {sharedId && <MetricsDashboard stats={stats} loading={loadingStats} onRefresh={refreshStats} />}
-              
+
               <GeneralSettings
                 title={formData.title}
                 slug={formData.slug}
