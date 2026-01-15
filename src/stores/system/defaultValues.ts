@@ -7,5 +7,5 @@ export const systemStoreDefaultValues: SystemStoreData = {
   defaultUserTheme: null,
   count: 0,
   isAuthenticated: false,
-  sessionToken: null,
+  sessionSignature: null,
 };

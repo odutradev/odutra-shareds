@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import { systemStoreDefaultValues } from "./defaultValues";
-import { hashPin } from "@utils/functions/security";
+import { hashPin, generateSessionSignature, validateSessionSignature } from "@utils/functions/security";
 import { SystemStore } from "./types";
 
 const useSystemStore = create<SystemStore>()(
@@ -44,11 +44,12 @@ const useSystemStore = create<SystemStore>()(
         const inputHash = await hashPin(pin);
         
         if (inputHash === correctPinHash) {
+          const signature = generateSessionSignature(inputHash);
           set((state) => ({
             system: { 
               ...state.system, 
               isAuthenticated: true,
-              sessionToken: inputHash 
+              sessionSignature: signature 
             }
           }));
           return true;
@@ -60,7 +61,7 @@ const useSystemStore = create<SystemStore>()(
           system: { 
             ...state.system, 
             isAuthenticated: false,
-            sessionToken: null 
+            sessionSignature: null 
           }
         }));
       },
@@ -75,13 +76,18 @@ const useSystemStore = create<SystemStore>()(
       partialize: (state) => ({
         system: {
           ...state.system,
-          isAuthenticated: false,
+          isAuthenticated: false, // Nunca persiste o booleano
           loading: false,
         }
       }),
       onRehydrateStorage: () => (state) => {
-        if (state && state.system.sessionToken === import.meta.env.VITE_PIN) {
-          state.system.isAuthenticated = true;
+        if (state) {
+          const isValid = validateSessionSignature(
+            state.system.sessionSignature, 
+            import.meta.env.VITE_PIN
+          );
+          state.system.isAuthenticated = isValid;
+          if (!isValid) state.system.sessionSignature = null;
         }
       },
     }

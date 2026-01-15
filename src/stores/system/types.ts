@@ -7,7 +7,7 @@ export interface SystemStoreData {
   defaultUserTheme: ThemeMode | null;
   count: number;
   isAuthenticated: boolean;
-  sessionToken: string | null;
+  sessionSignature: string | null;
 }
 
 export interface SystemStore {
