@@ -5,17 +5,16 @@ import path from 'path';
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
-  const requiredVars:string[] = [];
+  const requiredVars: string[] = [];
+
   requiredVars.forEach((key) => {
     if (!env[key]) {
-     throw new Error(chalk.red(`The environment variable ${chalk.bold(key)} is not defined.`));
+      throw new Error(chalk.red(`The environment variable ${chalk.bold(key)} is not defined.`));
     }
   });
 
   return {
-    plugins: [
-      react(),
-    ],
+    plugins: [react()],
     resolve: {
       alias: {
         '@mui/styled-engine': '@mui/styled-engine-sc',
@@ -27,14 +26,26 @@ export default defineConfig(({ mode }) => {
         '@stores': path.resolve(__dirname, './src/stores'),
         '@utils': path.resolve(__dirname, './src/utils'),
         '@hooks': path.resolve(__dirname, './src/hooks'),
-        '@pages': path.resolve(__dirname, './src/pages')
+        '@pages': path.resolve(__dirname, './src/pages'),
       },
     },
     build: {
       chunkSizeWarningLimit: 500,
+      minify: 'terser',
+      terserOptions: {
+        compress: {
+          drop_console: true,
+          drop_debugger: true,
+          passes: 2,
+        },
+        mangle: true,
+        format: {
+          comments: false,
+        },
+      },
       rollupOptions: {
         input: {
-          index: path.resolve(__dirname, 'index.html')
+          index: path.resolve(__dirname, 'index.html'),
         },
         output: {
           chunkFileNames: 'assets/chunks/[name]-[hash].js',
@@ -50,7 +61,7 @@ export default defineConfig(({ mode }) => {
     },
     publicDir: 'public',
     server: {
-      port: 1000
-    }
+      port: 1000,
+    },
   };
 });
