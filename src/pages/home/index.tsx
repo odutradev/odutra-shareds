@@ -12,8 +12,8 @@ const Home = () => {
     if (isAuthenticated) navigate('/dashboard/projects');
   }, [isAuthenticated, navigate]);
 
-  const handleLoginAttempt = (code: string) => {
-    const success = login(code);
+  const handleLoginAttempt = async (code: string) => {
+    const success = await login(code);
     if (success) navigate('/dashboard/projects');
     return success;
   };

@@ -18,6 +18,6 @@ export interface SystemStore {
   initializeTheme: () => void;
   toggleTheme: () => void;
   reset: () => void;
-  login: (pin: string) => boolean;
+  login: (pin: string) => Promise<boolean>;
   logout: () => void;
 }

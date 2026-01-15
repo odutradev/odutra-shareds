@@ -5,7 +5,7 @@ import { LoginCard, Logo, PinContainer, PinInput } from './styles';
 import logo from '@assets/imgs/logo.svg';
 
 interface LoginFormProps {
-  onLogin: (code: string) => boolean;
+  onLogin: (code: string) => Promise<boolean>;
 }
 
 const PIN_LENGTH = 6;
@@ -15,21 +15,29 @@ const LoginForm = ({ onLogin }: LoginFormProps) => {
   const [pin, setPin] = useState<string[]>(INITIAL_PIN);
   const [showPin, setShowPin] = useState(false);
   const [error, setError] = useState(false);
+  const [validating, setValidating] = useState(false);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   useEffect(() => {
     inputRefs.current[0]?.focus();
   }, []);
 
-  const handleSubmit = (code: string) => {
-    const isSuccess = onLogin(code);
+  const handleSubmit = async (code: string) => {
+    if (validating) return;
+    setValidating(true);
+    
+    const isSuccess = await onLogin(code);
+    
     if (!isSuccess) {
       setError(true);
       setTimeout(() => {
         setPin(INITIAL_PIN);
         setError(false);
+        setValidating(false);
         inputRefs.current[0]?.focus();
       }, 500);
+    } else {
+      setValidating(false);
     }
   };
 
@@ -101,12 +109,13 @@ const LoginForm = ({ onLogin }: LoginFormProps) => {
             {pin.map((digit, index) => (
               <PinInput
                 key={index}
-                ref={(el: any) => { inputRefs.current[index] = el; }}
+                ref={(el) => { inputRefs.current[index] = el; }}
                 type={showPin ? 'text' : 'password'}
                 value={digit}
-                onChange={(e: any) => handleChange(index, e.target.value)}
-                onKeyDown={(e: any) => handleKeyDown(index, e)}
+                onChange={(e) => handleChange(index, e.target.value)}
+                onKeyDown={(e) => handleKeyDown(index, e)}
                 className={error ? 'error' : ''}
+                disabled={validating}
                 autoComplete="off"
                 inputMode="numeric"
                 maxLength={1}
@@ -130,10 +139,10 @@ const LoginForm = ({ onLogin }: LoginFormProps) => {
           size="large"
           fullWidth
           onClick={() => handleSubmit(pin.join(''))}
-          disabled={pin.some((p) => p === '')}
+          disabled={pin.some((p) => p === '') || validating}
           sx={{ height: 48 }}
         >
-          Entrar
+          {validating ? 'Verificando...' : 'Entrar'}
         </Button>
       </Box>
     </LoginCard>

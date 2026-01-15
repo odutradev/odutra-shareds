@@ -95,36 +95,3 @@ Este projeto foi construído para funcionar nativamente com o **PocketDB** como 
     ```bash
     npm run dev
     ```
-
-## 📂 Estrutura do Projeto
-
-```
-src/
-├── actions/            # Funções de interação com a API (Service Layer)
-│   ├── analytics/      # Gestão de views e tempo
-│   ├── settings/       # Backup, restore e métricas do sistema
-│   └── shareds/        # CRUD de compartilhamentos
-├── assets/             # Imagens e configurações estáticas
-├── components/         # Componentes reutilizáveis (Loading, CodeEditor)
-├── hooks/              # Hooks customizados (useAction, useQueryParams)
-├── pages/              # Telas da aplicação
-│   ├── dashboard/      # Listagem de cards
-│   ├── home/           # Tela de Login (PIN)
-│   ├── settings/       # Configurações globais
-│   ├── shared/         # Renderizador da página pública/iframe
-│   └── sharedEditor/   # Editor de criação/edição
-├── routes/             # Configuração de rotas e guardas
-├── stores/             # Gerenciamento de estado global (Zustand)
-├── styles/             # Temas e estilos globais
-└── utils/              # Helpers e tipagens genéricas
-```
-
-## 🔌 Integração com Backend (PocketDB)
-
-O sistema utiliza as seguintes collections no PocketDB (armazenamento Key-Value):
-
-| Collection | Descrição |
-| ----- | ----- |
-| `shareds` | Armazena os metadados, HTML, CSS e JS das páginas criadas. |
-| `analytics_views` | Registra cada acesso único (data, userAgent, referrer). |
-| `analytics_time` | Registra "pings" de tempo de permanência na página (a cada 30s). |

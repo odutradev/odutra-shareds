@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import { systemStoreDefaultValues } from "./defaultValues";
+import { hashPin } from "@utils/functions/security";
 import { SystemStore } from "./types";
 
 const useSystemStore = create<SystemStore>()(
@@ -38,9 +39,11 @@ const useSystemStore = create<SystemStore>()(
           }
         }));
       },
-      login: (pin: string) => {
-        const correctPin = import.meta.env.VITE_PIN;
-        if (pin === correctPin) {
+      login: async (pin: string) => {
+        const correctPinHash = import.meta.env.VITE_PIN;
+        const inputHash = await hashPin(pin);
+        
+        if (inputHash === correctPinHash) {
             set((state) => ({
                 system: { ...state.system, isAuthenticated: true }
             }));
